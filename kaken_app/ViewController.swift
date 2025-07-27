@@ -16,7 +16,7 @@ class ViewController: UIViewController {
     UserDefaults.standard.set(mokuhyouText, forKey: "mokuhyou")
     print(mokuhyouText)
     performSegue(withIdentifier: "toViewController2", sender: nil)
-  }
+//  }
 
   override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
 
