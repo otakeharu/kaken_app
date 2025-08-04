@@ -12,7 +12,7 @@ class ViewController: UIViewController {
   @IBOutlet var textField: UITextField!
 
   @IBAction func nextButton(_ sender: UIButton) {
-    var mokuhyouText = textField.text ?? ""
+    let mokuhyouText = textField.text ?? ""
     UserDefaults.standard.set(mokuhyouText, forKey: "mokuhyou")
     print(mokuhyouText)
     performSegue(withIdentifier: "toViewController2", sender: nil)
@@ -20,6 +20,6 @@ class ViewController: UIViewController {
 
   override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
 
-    }
   }
+}
 

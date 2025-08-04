@@ -15,6 +15,7 @@ class ViewController2: UIViewController {
     var kikan = textField.text ?? ""
     UserDefaults.standard.set(kikan, forKey: "kikan")
     print(kikan)
+    performSegue(withIdentifier: "toViewController3", sender: nil)
   }
 
 //  override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

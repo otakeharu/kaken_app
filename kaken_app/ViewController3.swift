@@ -7,14 +7,64 @@
 
 import UIKit
 
-class ViewController3: UIViewController {
+class ViewController3: UIViewController, UITextViewDelegate {
+
   @IBOutlet var mokuhyoulabel: UILabel!
+  @IBOutlet var textView1: UITextView!
+  @IBOutlet var textView2: UITextView!
+  @IBOutlet var textView3: UITextView!
+  @IBOutlet var textView4: UITextView!
+  @IBOutlet var textView5: UITextView!
+  @IBOutlet var textView6: UITextView!
+  @IBOutlet var textView7: UITextView!
+  @IBOutlet var textView8: UITextView!
 
+  @IBAction func nextButton(_ sender: UIButton) {
+    var youso1 = textView1.text ?? ""
+    var youso2 = textView2.text ?? ""
+    var youso3 = textView3.text ?? ""
+    var youso4 = textView4.text ?? ""
+    var youso5 = textView5.text ?? ""
+    var youso6 = textView6.text ?? ""
+    var youso7 = textView7.text ?? ""
+    var youso8 = textView8.text ?? ""
 
+    UserDefaults.standard.set(youso1, forKey: "youso1")
+    UserDefaults.standard.set(youso2, forKey: "youso2")
+    UserDefaults.standard.set(youso3, forKey: "youso3")
+    UserDefaults.standard.set(youso4, forKey: "youso4")
+    UserDefaults.standard.set(youso5, forKey: "youso5")
+    UserDefaults.standard.set(youso6, forKey: "youso6")
+    UserDefaults.standard.set(youso7, forKey: "youso7")
+    UserDefaults.standard.set(youso8, forKey: "youso8")
+
+    performSegue(withIdentifier: "toViewController4", sender: nil)
+
+    print(youso1,youso2,youso3,youso4,youso5,youso6,youso7,youso8)
+
+  }
 
     override func viewDidLoad() {
         super.viewDidLoad()
-//      mokuhyoulabel.text = UserDefaults.standard.string(forKey:"mokuhyou")
+        mokuhyoulabel.text = UserDefaults.standard.string(forKey: "mokuhyou")
+        
+        textView1.delegate = self
+        textView2.delegate = self
+        textView3.delegate = self
+        textView4.delegate = self
+        textView5.delegate = self
+        textView6.delegate = self
+        textView7.delegate = self
+        textView8.delegate = self
+        
+        textView1.text = UserDefaults.standard.string(forKey: "youso1") ?? ""
+        textView2.text = UserDefaults.standard.string(forKey: "youso2") ?? ""
+        textView3.text = UserDefaults.standard.string(forKey: "youso3") ?? ""
+        textView4.text = UserDefaults.standard.string(forKey: "youso4") ?? ""
+        textView5.text = UserDefaults.standard.string(forKey: "youso5") ?? ""
+        textView6.text = UserDefaults.standard.string(forKey: "youso6") ?? ""
+        textView7.text = UserDefaults.standard.string(forKey: "youso7") ?? ""
+        textView8.text = UserDefaults.standard.string(forKey: "youso8") ?? ""
     }
     
 
