@@ -348,6 +348,7 @@
                                 <buttonConfiguration key="configuration" style="plain" title="next"/>
                                 <connections>
                                     <action selector="nextButton:" destination="EC1-bE-gNb" eventType="touchUpInside" id="InB-Lu-tub"/>
+                                    <action selector="nextButton:" destination="lep-y2-9UB" eventType="touchUpInside" id="hbr-aA-LrL"/>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="miT-0f-7l0">
@@ -355,18 +356,31 @@
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="plain" title="&gt;"/>
+                                <connections>
+                                    <action selector="next" destination="lep-y2-9UB" eventType="touchUpInside" id="E4Y-L7-db0"/>
+                                </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sMe-tg-spv">
                                 <rect key="frame" x="16" y="377" width="35" height="99"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="plain" title="&lt;"/>
+                                <connections>
+                                    <action selector="back" destination="lep-y2-9UB" eventType="touchUpInside" id="wNJ-MT-agz"/>
+                                </connections>
                             </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="3if-KY-Hcw"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     </view>
                     <navigationItem key="navigationItem" id="32d-0M-xa8"/>
+                    <connections>
+                        <outlet property="textView1" destination="nYp-A6-TAG" id="Pb3-wf-bSv"/>
+                        <outlet property="textView2" destination="CT6-ZV-jLf" id="zbJ-QF-MfB"/>
+                        <outlet property="textView3" destination="FRq-ZA-ogo" id="USp-nE-Tei"/>
+                        <outlet property="textView4" destination="4q2-cb-FWr" id="e0G-dw-f5t"/>
+                        <outlet property="yousoLabel" destination="piw-Ze-bIO" id="cje-Ic-w1x"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="K2T-8J-Fxw" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>

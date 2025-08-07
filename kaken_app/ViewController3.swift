@@ -67,6 +67,28 @@ class ViewController3: UIViewController, UITextViewDelegate {
         textView8.text = UserDefaults.standard.string(forKey: "youso8") ?? ""
     }
     
+    func textViewDidChange(_ textView: UITextView) {
+        switch textView {
+        case textView1:
+            UserDefaults.standard.set(textView.text, forKey: "youso1")
+        case textView2:
+            UserDefaults.standard.set(textView.text, forKey: "youso2")
+        case textView3:
+            UserDefaults.standard.set(textView.text, forKey: "youso3")
+        case textView4:
+            UserDefaults.standard.set(textView.text, forKey: "youso4")
+        case textView5:
+            UserDefaults.standard.set(textView.text, forKey: "youso5")
+        case textView6:
+            UserDefaults.standard.set(textView.text, forKey: "youso6")
+        case textView7:
+            UserDefaults.standard.set(textView.text, forKey: "youso7")
+        case textView8:
+            UserDefaults.standard.set(textView.text, forKey: "youso8")
+        default:
+            break
+        }
+    }
 
     /*
     // MARK: - Navigation
