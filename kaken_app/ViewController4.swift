@@ -94,20 +94,20 @@ class ViewController4: UIViewController, UITextViewDelegate {
   ]
 
   @IBAction func next() {
+    savePage()
     if index < yousoArray.count - 1 {
       index += 1
-
       setUI()
     }
   }
 
   @IBAction func back() {
+    savePage()
     if index > 0 {
-
+      index -= 1
       setUI()
     }
   }
-
 
   func setUI() {
     yousoLabel.text = yousoArray[index]
@@ -123,6 +123,11 @@ class ViewController4: UIViewController, UITextViewDelegate {
     koudouArray[index].koudou2 = textView2.text ?? ""
     koudouArray[index].koudou3 = textView3.text ?? ""
     koudouArray[index].koudou4 = textView4.text ?? ""
+
+    UserDefaults.standard.set(textView1.text ?? "", forKey: "koudou\(index + 1)1")
+    UserDefaults.standard.set(textView2.text ?? "", forKey: "koudou\(index + 1)2")
+    UserDefaults.standard.set(textView3.text ?? "", forKey: "koudou\(index + 1)3")
+    UserDefaults.standard.set(textView4.text ?? "", forKey: "koudou\(index + 1)4")
   }
 
   func saveAll() {
