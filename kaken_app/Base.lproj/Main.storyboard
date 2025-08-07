@@ -380,11 +380,28 @@
                         <outlet property="textView3" destination="FRq-ZA-ogo" id="USp-nE-Tei"/>
                         <outlet property="textView4" destination="4q2-cb-FWr" id="e0G-dw-f5t"/>
                         <outlet property="yousoLabel" destination="piw-Ze-bIO" id="cje-Ic-w1x"/>
+                        <segue destination="SxV-pS-4MG" kind="show" identifier="toViewController5" id="A46-Eh-L43"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="K2T-8J-Fxw" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="2983.969465648855" y="3.5211267605633805"/>
+        </scene>
+        <!--View Controller5-->
+        <scene sceneID="hOu-uy-kbl">
+            <objects>
+                <viewController id="SxV-pS-4MG" customClass="ViewController5" customModule="kaken_app" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Xlu-xb-tWQ">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <viewLayoutGuide key="safeArea" id="ZcJ-NL-LNn"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="QXc-cg-lKX"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="PXn-ye-q0c" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3702" y="6"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="MQm-9X-kyP">

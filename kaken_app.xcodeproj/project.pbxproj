@@ -17,6 +17,7 @@
 		49F89F512E2F840300A25E5B /* ViewController3.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F89F502E2F840300A25E5B /* ViewController3.swift */; };
 		49F89F532E39EE4600A25E5B /* ViewController4.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F89F522E39EE4600A25E5B /* ViewController4.swift */; };
 		49F89F552E3DA74100A25E5B /* koudou.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F89F542E3DA74100A25E5B /* koudou.swift */; };
+		49F89F572E44566600A25E5B /* ViewController5.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F89F562E44566600A25E5B /* ViewController5.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +33,7 @@
 		49F89F502E2F840300A25E5B /* ViewController3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController3.swift; sourceTree = "<group>"; };
 		49F89F522E39EE4600A25E5B /* ViewController4.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController4.swift; sourceTree = "<group>"; };
 		49F89F542E3DA74100A25E5B /* koudou.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = koudou.swift; sourceTree = "<group>"; };
+		49F89F562E44566600A25E5B /* ViewController5.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController5.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -70,6 +72,7 @@
 				49F89F4E2E2F619400A25E5B /* ViewController2.swift */,
 				49F89F502E2F840300A25E5B /* ViewController3.swift */,
 				49F89F522E39EE4600A25E5B /* ViewController4.swift */,
+				49F89F562E44566600A25E5B /* ViewController5.swift */,
 				49F89F542E3DA74100A25E5B /* koudou.swift */,
 				499461322E2F4A63007AD23B /* Main.storyboard */,
 				499461352E2F4A67007AD23B /* Assets.xcassets */,
@@ -154,6 +157,7 @@
 				49F89F532E39EE4600A25E5B /* ViewController4.swift in Sources */,
 				499461312E2F4A63007AD23B /* ViewController.swift in Sources */,
 				49F89F4F2E2F619400A25E5B /* ViewController2.swift in Sources */,
+				49F89F572E44566600A25E5B /* ViewController5.swift in Sources */,
 				4994612D2E2F4A63007AD23B /* AppDelegate.swift in Sources */,
 				49F89F552E3DA74100A25E5B /* koudou.swift in Sources */,
 				4994612F2E2F4A63007AD23B /* SceneDelegate.swift in Sources */,
