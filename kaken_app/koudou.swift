@@ -14,7 +14,6 @@ class koudou {
   var koudou3: String
   var koudou4: String
 
-
   init(youso: String, koudou1: String, koudou2: String, koudou3: String, koudou4: String) {
     self.youso = youso
     self.koudou1 = koudou1

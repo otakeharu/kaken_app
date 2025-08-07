@@ -43,7 +43,6 @@ class ViewController3: UIViewController, UITextViewDelegate {
     print(youso1,youso2,youso3,youso4,youso5,youso6,youso7,youso8)
 
   }
-
     override func viewDidLoad() {
         super.viewDidLoad()
         mokuhyoulabel.text = UserDefaults.standard.string(forKey: "mokuhyou")

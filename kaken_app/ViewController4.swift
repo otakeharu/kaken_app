@@ -62,7 +62,6 @@ class ViewController4: UIViewController, UITextViewDelegate {
 @IBAction func back(){    index -= 1
     setUI()
 
-
   }
 
 
