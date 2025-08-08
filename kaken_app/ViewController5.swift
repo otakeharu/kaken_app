@@ -12,7 +12,6 @@ class ViewController5: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Do any additional setup after loading the view.
     }
     
 
@@ -25,5 +24,9 @@ class ViewController5: UIViewController {
         // Pass the selected object to the new view controller.
     }
     */
+  @IBAction func nextButton(_ sender: UIButton) {
+
+    performSegue(withIdentifier: "toViewController6", sender: nil)
+  }
 
 }

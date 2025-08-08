@@ -2,24 +2,28 @@
 //  ViewController.swift
 //  kaken_app
 //
-//  Created by Haru Takenaka on 2025/07/22.
+//  Created by Haru Takenaka on 2025/08/08.
 //
 
 import UIKit
 
-class ViewController: UIViewController {
+class ViewController6: UIViewController {
 
-  @IBOutlet var textField: UITextField!
+    override func viewDidLoad() {
+        super.viewDidLoad()
 
-  @IBAction func nextButton(_ sender: UIButton) {
-    let mokuhyouText = textField.text ?? ""
-    UserDefaults.standard.set(mokuhyouText, forKey: "mokuhyou")
-    print(mokuhyouText)
-    performSegue(withIdentifier: "toViewController2", sender: nil)
-  }
+        // Do any additional setup after loading the view.
+    }
+    
 
-  override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+    /*
+    // MARK: - Navigation
 
-  }
+    // In a storyboard-based application, you will often want to do a little preparation before navigation
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        // Get the new view controller using segue.destination.
+        // Pass the selected object to the new view controller.
+    }
+    */
+
 }
-

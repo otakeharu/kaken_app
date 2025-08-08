@@ -141,7 +141,7 @@ class ViewController4: UIViewController, UITextViewDelegate {
   }
   func printKoudou() {
       for i in 1...8 {
-          print("▼ koudou\(i)")
+          print("koudou\(i)")
           for j in 1...4 {
               let key = "koudou\(i)\(j)"
               let value = UserDefaults.standard.string(forKey: key) ?? "（×）"
