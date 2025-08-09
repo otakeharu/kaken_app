@@ -1,161 +1,80 @@
-//
-//  ViewController5.swift
-//  kaken_app
-//
-//  Created by Haru Takenaka on 2025/08/07.
-//
-
 import UIKit
 
-// MARK: - Models
-
-struct Row: Codable, Hashable {
-    let id: UUID
-    let title: String
+// MARK: - Constants (列幅など)
+private enum Grid {
+    static let titleWidth: CGFloat = 120   // item0 行名
+    static let editWidth: CGFloat  = 80    // item1 編集
+    static let dayWidth: CGFloat   = 44    // item2以降 日付列
+    static let rowHeight: CGFloat  = 44
+    static let headerHeight: CGFloat = 44
+    static let maxRows = 24
 }
 
-struct Task: Codable, Hashable {
-    let id: UUID
-    let rowID: UUID
-    let title: String
-    let startDate: Date
-    let endDate: Date
-    let colorHex: String? // 例: "#FF3B30"
+// MARK: - UserDefaults Keys
+private enum UDKey {
+    static let createdAt   = "gantt.createdAt"   // "yyyy-MM-dd"
+    static let goalEnd     = "gantt.goalEnd"     // "yyyy-MM-dd"
+    static func koudou(_ i: Int) -> String { "koudou\(i)" } // 1...24
+    static func onoff(row: Int, date: String) -> String { "onoff_\(row)_\(date)" }
+    // VC6 へ渡す一時キー（VC6 側でも読み取る）
+    static let currentRowIndex = "vc6.currentRowIndex" // 1...24
 }
 
-// MARK: - UserDefaults Store
+// MARK: - Date utils
+private let jpCal = Calendar(identifier: .gregorian)
+private let jpLocale = Locale(identifier: "ja_JP")
 
-enum GanttDefaultsKey {
-    static let rows = "gantt.rows"
-    static let tasks = "gantt.tasks"
-    static let startDate = "gantt.startDate"
-    static let visibleDays = "gantt.visibleDays"
+private func ymdString(_ date: Date) -> String {
+    let df = DateFormatter()
+    df.calendar = jpCal; df.locale = jpLocale
+    df.dateFormat = "yyyy-MM-dd"
+    return df.string(from: date)
+}
+private func dString(_ date: Date) -> String {
+    let df = DateFormatter()
+    df.calendar = jpCal; df.locale = jpLocale
+    df.dateFormat = "d"
+    return df.string(from: date)
+}
+private func monthString(_ date: Date) -> String {
+    let df = DateFormatter()
+    df.calendar = jpCal; df.locale = jpLocale
+    df.dateFormat = "yyyy年M月"
+    return df.string(from: date)
+}
+private func parseYMD(_ s: String) -> Date? {
+    let df = DateFormatter()
+    df.calendar = jpCal; df.locale = jpLocale
+    df.dateFormat = "yyyy-MM-dd"
+    return df.date(from: s)
+}
+private func daysArray(from start: Date, to end: Date) -> [Date] {
+    var days: [Date] = []
+    var cur = jpCal.startOfDay(for: start)
+    let endDay = jpCal.startOfDay(for: end)
+    while cur <= endDay {
+        days.append(cur)
+        cur = jpCal.date(byAdding: .day, value: 1, to: cur)!
+    }
+    return days
 }
 
-final class GanttStore {
-    static let shared = GanttStore()
-    private init() {}
+// MARK: - Cells
 
-    private let encoder: JSONEncoder = {
-        let e = JSONEncoder()
-        e.dateEncodingStrategy = .iso8601
-        return e
-    }()
-    private let decoder: JSONDecoder = {
-        let d = JSONDecoder()
-        d.dateDecodingStrategy = .iso8601
-        return d
-    }()
-
-    // Load
-    func loadRows() -> [Row] {
-        guard let data = UserDefaults.standard.data(forKey: GanttDefaultsKey.rows),
-              let rows = try? decoder.decode([Row].self, from: data) else { return [] }
-        return rows
-    }
-    func loadTasks() -> [Task] {
-        guard let data = UserDefaults.standard.data(forKey: GanttDefaultsKey.tasks),
-              let tasks = try? decoder.decode([Task].self, from: data) else { return [] }
-        return tasks
-    }
-    func loadStartDate() -> Date? {
-        // ISO8601で保存している前提／DateそのものでもOK
-        if let data = UserDefaults.standard.data(forKey: GanttDefaultsKey.startDate),
-           let d = try? decoder.decode(Date.self, from: data) {
-            return d
-        }
-        // 互換: Double（timeIntervalSince1970）で入ってた場合
-        if let t = UserDefaults.standard.object(forKey: GanttDefaultsKey.startDate) as? Double {
-            return Date(timeIntervalSince1970: t)
-        }
-        return nil
-    }
-    func loadVisibleDays() -> Int {
-        let v = UserDefaults.standard.integer(forKey: GanttDefaultsKey.visibleDays)
-        return v > 0 ? v : 14
-    }
-
-    // Save（前の画面で使う）
-    func save(rows: [Row]) {
-        if let data = try? encoder.encode(rows) {
-            UserDefaults.standard.set(data, forKey: GanttDefaultsKey.rows)
-        }
-    }
-    func save(tasks: [Task]) {
-        if let data = try? encoder.encode(tasks) {
-            UserDefaults.standard.set(data, forKey: GanttDefaultsKey.tasks)
-        }
-    }
-    func save(startDate: Date) {
-        if let data = try? encoder.encode(startDate) {
-            UserDefaults.standard.set(data, forKey: GanttDefaultsKey.startDate)
-        }
-    }
-    func save(visibleDays: Int) {
-        UserDefaults.standard.set(visibleDays, forKey: GanttDefaultsKey.visibleDays)
-    }
-
-    // デモ用：何もなければサンプル投入（開発時の保険）
-    func seedIfEmpty() {
-        if loadRows().isEmpty || loadTasks().isEmpty || loadStartDate() == nil {
-            let rows = (0..<10).map { Row(id: UUID(), title: "行\($0+1)") }
-            let start = Calendar.current.startOfDay(for: Date())
-            let tasks: [Task] = [
-                Task(id: UUID(), rowID: rows[0].id, title: "A", startDate: start.addingDays(1), endDate: start.addingDays(3), colorHex: "#FF3B30"),
-                Task(id: UUID(), rowID: rows[3].id, title: "B", startDate: start.addingDays(5), endDate: start.addingDays(7), colorHex: "#34C759"),
-                Task(id: UUID(), rowID: rows[6].id, title: "C", startDate: start.addingDays(8), endDate: start.addingDays(9), colorHex: "#007AFF"),
-            ]
-            save(rows: rows)
-            save(tasks: tasks)
-            save(startDate: start)
-            save(visibleDays: 14)
-        }
-    }
-}
-
-// MARK: - Cells (StoryboardのPrototypeにClass/IDを設定)
-
-final class HeaderCell: UICollectionViewCell {
-    static let reuseID = "HeaderCell"
-    let title = UILabel()
-    let sub = UILabel()
-    override init(frame: CGRect) { super.init(frame: frame); setup() }
-    required init?(coder: NSCoder) { super.init(coder: coder); setup() }
-    private func setup() {
-        title.font = .systemFont(ofSize: 14, weight: .semibold)
-        title.textAlignment = .center
-        sub.font = .systemFont(ofSize: 10)
-        sub.textAlignment = .center
-        sub.textColor = .secondaryLabel
-        let stack = UIStackView(arrangedSubviews: [title, sub])
-        stack.axis = .vertical; stack.alignment = .center; stack.spacing = 2
-        contentView.addSubview(stack)
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            stack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            stack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            stack.topAnchor.constraint(equalTo: contentView.topAnchor),
-            stack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
-        ])
-        contentView.backgroundColor = .systemGray6
-        contentView.layer.borderWidth = 0.5
-        contentView.layer.borderColor = UIColor.separator.cgColor
-    }
-}
-
-final class SidebarCell: UICollectionViewCell {
-    static let reuseID = "SidebarCell"
+final class HeaderMonthCell: UICollectionViewCell {
+    static let reuse = "HeaderMonthCell"
     let label = UILabel()
     override init(frame: CGRect) { super.init(frame: frame); setup() }
     required init?(coder: NSCoder) { super.init(coder: coder); setup() }
     private func setup() {
-        label.font = .systemFont(ofSize: 16)
+        label.font = .systemFont(ofSize: 15, weight: .semibold)
         label.textAlignment = .center
+        contentView.backgroundColor = .systemGray6
         contentView.addSubview(label)
         label.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            label.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            label.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            label.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 4),
+            label.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -4),
             label.topAnchor.constraint(equalTo: contentView.topAnchor),
             label.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
         ])
@@ -164,12 +83,80 @@ final class SidebarCell: UICollectionViewCell {
     }
 }
 
-final class GridCell: UICollectionViewCell {
-    static let reuseID = "GridCell"
-    let bar = UIView()
-    let title = UILabel()
+final class HeaderDayCell: UICollectionViewCell {
+    static let reuse = "HeaderDayCell"
+    let label = UILabel()
+    let wday = UILabel()
+    override init(frame: CGRect) { super.init(frame: frame); setup() }
+    required init?(coder: NSCoder) { super.init(coder: coder); setup() }
+    private func setup() {
+        let stack = UIStackView(arrangedSubviews: [label, wday])
+        stack.axis = .vertical; stack.alignment = .center; stack.spacing = 0
+        label.font = .systemFont(ofSize: 15, weight: .semibold)
+        wday.font = .systemFont(ofSize: 10); wday.textColor = .secondaryLabel
+        label.textAlignment = .center; wday.textAlignment = .center
+        contentView.addSubview(stack)
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            stack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            stack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            stack.topAnchor.constraint(equalTo: contentView.topAnchor),
+            stack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+        ])
+        contentView.backgroundColor = .systemGray6
+        contentView.layer.borderWidth = 0.5
+        contentView.layer.borderColor = UIColor.separator.cgColor
+    }
+}
+
+final class RowTitleCell: UICollectionViewCell {
+    static let reuse = "RowTitleCell"
+    let label = UILabel()
+    override init(frame: CGRect) { super.init(frame: frame); setup() }
+    required init?(coder: NSCoder) { super.init(coder: coder); setup() }
+    private func setup() {
+        label.font = .systemFont(ofSize: 14)
+        label.textAlignment = .left
+        contentView.addSubview(label)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            label.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
+            label.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
+            label.topAnchor.constraint(equalTo: contentView.topAnchor),
+            label.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
+        ])
+        contentView.layer.borderWidth = 0.5
+        contentView.layer.borderColor = UIColor.separator.cgColor
+    }
+}
+
+final class RowEditCell: UICollectionViewCell {
+    static let reuse = "RowEditCell"
+    let button = UIButton(type: .system)
+    var onTap: (() -> Void)?
+    override init(frame: CGRect) { super.init(frame: frame); setup() }
+    required init?(coder: NSCoder) { super.init(coder: coder); setup() }
+    private func setup() {
+        button.setTitle("編集", for: .normal)
+        contentView.addSubview(button)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            button.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            button.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            button.topAnchor.constraint(equalTo: contentView.topAnchor),
+            button.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
+        ])
+        button.addTarget(self, action: #selector(tap), for: .touchUpInside)
+        contentView.layer.borderWidth = 0.5
+        contentView.layer.borderColor = UIColor.separator.cgColor
+    }
+    @objc private func tap() { onTap?() }
+}
+
+final class DayStateCell: UICollectionViewCell {
+    static let reuse = "DayStateCell"
     override var isSelected: Bool {
-        didSet { contentView.layer.borderColor = (isSelected ? UIColor.systemRed : UIColor.separator).cgColor }
+        didSet { layer.borderColor = (isSelected ? UIColor.systemRed : UIColor.separator).cgColor }
     }
     override init(frame: CGRect) { super.init(frame: frame); setup() }
     required init?(coder: NSCoder) { super.init(coder: coder); setup() }
@@ -177,118 +164,127 @@ final class GridCell: UICollectionViewCell {
         contentView.backgroundColor = .systemBackground
         contentView.layer.borderWidth = 0.5
         contentView.layer.borderColor = UIColor.separator.cgColor
-
-        bar.layer.cornerRadius = 6
-        bar.isHidden = true
-
-        title.font = .systemFont(ofSize: 9, weight: .medium)
-        title.textColor = .white
-        title.textAlignment = .center
-        title.isHidden = true
-
-        contentView.addSubview(bar)
-        contentView.addSubview(title)
-        bar.translatesAutoresizingMaskIntoConstraints = false
-        title.translatesAutoresizingMaskIntoConstraints = false
-
-        NSLayoutConstraint.activate([
-            bar.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 2),
-            bar.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -2),
-            bar.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            bar.heightAnchor.constraint(equalToConstant: 14),
-
-            title.leadingAnchor.constraint(equalTo: bar.leadingAnchor, constant: 2),
-            title.trailingAnchor.constraint(equalTo: bar.trailingAnchor, constant: -2),
-            title.centerYAnchor.constraint(equalTo: bar.centerYAnchor)
-        ])
     }
-    func configure(showBar: Bool, color: UIColor?, text: String?) {
-        bar.isHidden = !showBar
-        title.isHidden = !showBar
-        if showBar {
-            bar.backgroundColor = color ?? .systemBlue
-            title.text = text
+    func configure(on: Bool, isToday: Bool) {
+        contentView.backgroundColor = on ? UIColor.systemBlue.withAlphaComponent(0.25) : .systemBackground
+        if isToday {
+            // 今日列うっすら
+            contentView.layer.borderWidth = 1
+            contentView.layer.borderColor = UIColor.systemBlue.withAlphaComponent(0.6).cgColor
+        } else {
+            contentView.layer.borderWidth = 0.5
+            contentView.layer.borderColor = UIColor.separator.cgColor
         }
     }
 }
 
-// MARK: - ViewController
+// MARK: - Main VC
 
 final class ViewController5: UIViewController {
 
-    // Storyboard Outlets
-    @IBOutlet weak var headerCV: UICollectionView!
-    @IBOutlet weak var sidebarCV: UICollectionView!
-    @IBOutlet weak var gridCV: UICollectionView!
+    @IBOutlet weak var collectionView: UICollectionView!
 
-    // Layout constants（StoryboardのItem Sizeと揃える）
-    private let sidebarWidth: CGFloat = 64
-    private let headerHeight: CGFloat = 56
-    private let cellWidth: CGFloat = 64
-    private let cellHeight: CGFloat = 56
+    // 設定（必要に応じてUserDefaultsへ格納）
+    private var createdAt: Date = Date()
+    private var goalEnd: Date = Date()
 
-    // Data
-    private var rows: [Row] = []
-    private var tasks: [Task] = []
-    private var startDate: Date = Calendar.current.startOfDay(for: Date())
-    private var visibleDays: Int = 14
     private var days: [Date] = []
+    private var koudouTitles: [String] = Array(repeating: "", count: Grid.maxRows) // index 0..23 -> koudou1..24
 
-    private var calendar = Calendar(identifier: .gregorian)
+    // ヘッダー月のための現在列インデックス（item2=0列目とする）
+    private var firstVisibleDayIndex: Int = 0
+
+    // Segue Identifier（StoryboardのSegueにも同じIDを設定してください）
+    private let segueToVC6 = "toVC6"
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "ガント"
-        calendar.locale = Locale(identifier: "ja_JP")
+        setupDataFromUserDefaults()
+        setupCollection()
+    }
 
-        // データロード（無ければシード）
-        GanttStore.shared.seedIfEmpty()
-        reloadFromDefaults()
+    private func setupDataFromUserDefaults() {
+        let ud = UserDefaults.standard
+        // 作成日が未設定なら今日を保存して採用
+        if let s = ud.string(forKey: UDKey.createdAt), let d = parseYMD(s) { createdAt = d }
+        else {
+            createdAt = jpCal.startOfDay(for: Date())
+            ud.set(ymdString(createdAt), forKey: UDKey.createdAt)
+        }
+        // 目標終了日は必須（未設定なら作成日と同じ日にしておく）
+        if let s = ud.string(forKey: UDKey.goalEnd), let d = parseYMD(s) { goalEnd = d }
+        else {
+            goalEnd = createdAt
+            ud.set(ymdString(goalEnd), forKey: UDKey.goalEnd)
+        }
+        days = daysArray(from: createdAt, to: goalEnd)
 
-        // CollectionViewセット（Storyboard接続でもOK）
-        [headerCV, sidebarCV, gridCV].forEach {
-            $0?.dataSource = self
-            $0?.delegate = self
-        }
-
-        // FlowLayout（Storyboard設定を最終確認）
-        if let l = headerCV.collectionViewLayout as? UICollectionViewFlowLayout {
-            l.scrollDirection = .horizontal
-            l.minimumInteritemSpacing = 0; l.minimumLineSpacing = 0
-            l.itemSize = CGSize(width: cellWidth, height: headerHeight)
-        }
-        if let l = sidebarCV.collectionViewLayout as? UICollectionViewFlowLayout {
-            l.scrollDirection = .vertical
-            l.minimumInteritemSpacing = 0; l.minimumLineSpacing = 0
-            l.itemSize = CGSize(width: sidebarWidth, height: cellHeight)
-        }
-        if let l = gridCV.collectionViewLayout as? UICollectionViewFlowLayout {
-            l.scrollDirection = .vertical
-            l.minimumInteritemSpacing = 0; l.minimumLineSpacing = 0
-            l.itemSize = CGSize(width: cellWidth, height: cellHeight)
-        }
-        gridCV.isDirectionalLockEnabled = true
-
-        // 初期表示位置：今日が見えるように（範囲内なら）
-        if let todayIdx = days.firstIndex(where: { Calendar.current.isDateInToday($0) }) {
-            let indexPath = IndexPath(item: todayIdx, section: 0)
-            headerCV.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: false)
-            // gridは横だけ合わせる
-            gridCV.contentOffset.x = headerCV.contentOffset.x
+        // koudou1..24
+        for i in 1...Grid.maxRows {
+            koudouTitles[i-1] = ud.string(forKey: UDKey.koudou(i)) ?? "koudou\(i)"
         }
     }
 
-    private func reloadFromDefaults() {
-        rows = GanttStore.shared.loadRows()
-        tasks = GanttStore.shared.loadTasks()
-        startDate = GanttStore.shared.loadStartDate() ?? Calendar.current.startOfDay(for: Date())
-        visibleDays = GanttStore.shared.loadVisibleDays()
+    private func setupCollection() {
+        collectionView.dataSource = self
+        collectionView.delegate = self
 
-        days = (0..<visibleDays).compactMap { calendar.date(byAdding: .day, value: $0, to: startDate) }
+        // Register（StoryboardにPrototypeを置いていれば不要ですが、保険で二重登録OK）
+        collectionView.register(HeaderMonthCell.self, forCellWithReuseIdentifier: HeaderMonthCell.reuse)
+        collectionView.register(HeaderDayCell.self,   forCellWithReuseIdentifier: HeaderDayCell.reuse)
+        collectionView.register(RowTitleCell.self,    forCellWithReuseIdentifier: RowTitleCell.reuse)
+        collectionView.register(RowEditCell.self,     forCellWithReuseIdentifier: RowEditCell.reuse)
+        collectionView.register(DayStateCell.self,    forCellWithReuseIdentifier: DayStateCell.reuse)
 
-        headerCV?.reloadData()
-        sidebarCV?.reloadData()
-        gridCV?.reloadData()
+        collectionView.alwaysBounceVertical = true
+        collectionView.alwaysBounceHorizontal = true
+        collectionView.isDirectionalLockEnabled = true
+    }
+
+    // index -> Date（ヘッダーの item 1 が days[0] に対応）
+    private func dateForItem(_ item: Int) -> Date? {
+        let dayIndex = item - 1 // item1 -> 0
+        guard dayIndex >= 0 && dayIndex < days.count else { return nil }
+        return days[dayIndex]
+    }
+
+    private func isOn(rowIndex: Int, date: Date) -> Bool {
+        let key = UDKey.onoff(row: rowIndex, date: ymdString(date))
+        return UserDefaults.standard.bool(forKey: key)
+    }
+
+    private func toggleOn(rowIndex: Int, date: Date) {
+        let ud = UserDefaults.standard
+        let key = UDKey.onoff(row: rowIndex, date: ymdString(date))
+        let newValue = !ud.bool(forKey: key)
+        ud.set(newValue, forKey: key)
+    }
+
+    private func updateHeaderMonthIfNeeded() {
+        // contentOffset.x から「現在の先頭日列（item1 に相当する列）」の days インデックスを推定
+        let x = collectionView.contentOffset.x
+        let threshold = Grid.titleWidth + Grid.editWidth
+        var idx = 0
+        if x > threshold {
+            let dx = x - threshold
+            idx = max(0, Int(round(dx / Grid.dayWidth)))
+            idx = min(idx, max(0, days.count - 1))
+        }
+        if idx != firstVisibleDayIndex {
+            firstVisibleDayIndex = idx
+            // ヘッダーの月セルだけ更新
+            let ip = IndexPath(item: 0, section: 0)
+            collectionView.reloadItems(at: [ip])
+        }
+    }
+
+    @objc private func goToVC6(rowIndex: Int) {
+        // VC6 側が読みやすいように一時キーで渡す（あなたの指定どおり UserDefaults 運用）
+        let ud = UserDefaults.standard
+        ud.set(rowIndex, forKey: UDKey.currentRowIndex)
+        ud.set(ymdString(createdAt), forKey: UDKey.createdAt)
+        ud.set(ymdString(goalEnd), forKey: UDKey.goalEnd)
+        performSegue(withIdentifier: segueToVC6, sender: nil)
     }
 }
 
@@ -297,142 +293,109 @@ final class ViewController5: UIViewController {
 extension ViewController5: UICollectionViewDataSource {
 
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        switch collectionView {
-        case headerCV: return 1
-        case sidebarCV, gridCV: return rows.count
-        default: return 0
-        }
+        // セクション0: ヘッダー, セクション1..24: koudou 行
+        return 1 + Grid.maxRows
     }
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        switch collectionView {
-        case headerCV: return days.count
-        case sidebarCV: return 1
-        case gridCV: return days.count
-        default: return 0
+        if section == 0 {
+            // item0(月) + item1...日付
+            return 1 + days.count
+        } else {
+            // item0(行名) + item1(編集) + item2...日付ON/OFF
+            return 2 + days.count
         }
     }
 
     func collectionView(_ collectionView: UICollectionView,
                         cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
 
-        if collectionView === headerCV {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: HeaderCell.reuseID, for: indexPath) as! HeaderCell
-            let d = days[indexPath.item]
-            cell.title.text = DateFormatter.g_day.string(from: d)
-            cell.sub.text = DateFormatter.g_weekday.string(from: d)
-            cell.contentView.backgroundColor = Calendar.current.isDateInToday(d) ? .systemGray4 : .systemGray6
-            return cell
-
-        } else if collectionView === sidebarCV {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SidebarCell.reuseID, for: indexPath) as! SidebarCell
-            cell.label.text = rows[indexPath.section].title
-            return cell
-
-        } else {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: GridCell.reuseID, for: indexPath) as! GridCell
-            let row = rows[indexPath.section]
-            let day = days[indexPath.item]
-
-            // その行で、その日が「タスク期間内」に含まれるタスクがあるか判定
-            if let task = tasks.first(where: { $0.rowID == row.id && day.isBetween($0.startDate, $0.endDate, by: calendar) }) {
-                let color = UIColor(hex: task.colorHex) ?? .systemBlue
-                // 期間の途中ならタイトルは省略、開始日のセルだけ表示する等のルールもOK
-                let showTitle = calendar.isDate(day, inSameDayAs: task.startDate)
-                cell.configure(showBar: true, color: color, text: showTitle ? task.title : nil)
+        if indexPath.section == 0 {
+            // ヘッダー行
+            if indexPath.item == 0 {
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: HeaderMonthCell.reuse, for: indexPath) as! HeaderMonthCell
+                let date = days[firstVisibleDayIndex]
+                cell.label.text = monthString(date)
+                return cell
             } else {
-                cell.configure(showBar: false, color: nil, text: nil)
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: HeaderDayCell.reuse, for: indexPath) as! HeaderDayCell
+                let d = days[indexPath.item - 1]
+                cell.label.text = dString(d)
+                let wd = Calendar.current.component(.weekday, from: d) // 1=Sun
+                cell.wday.text = ["日","月","火","水","木","金","土"][wd-1]
+                cell.contentView.backgroundColor = Calendar.current.isDateInToday(d) ? UIColor.systemGray4 : UIColor.systemGray6
+                return cell
             }
-            return cell
+        } else {
+            // データ行
+            let rowIndex = indexPath.section // 1..24
+
+            if indexPath.item == 0 {
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: RowTitleCell.reuse, for: indexPath) as! RowTitleCell
+                cell.label.text = koudouTitles[rowIndex - 1]
+                return cell
+            } else if indexPath.item == 1 {
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: RowEditCell.reuse, for: indexPath) as! RowEditCell
+                cell.onTap = { [weak self] in self?.goToVC6(rowIndex: rowIndex) }
+                return cell
+            } else {
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: DayStateCell.reuse, for: indexPath) as! DayStateCell
+                let d = days[indexPath.item - 2] // item2 -> days[0]
+                let on = isOn(rowIndex: rowIndex, date: d)
+                cell.configure(on: on, isToday: Calendar.current.isDateInToday(d))
+                return cell
+            }
         }
     }
 }
 
-// MARK: - Delegate & Scroll Sync
+// MARK: - Delegate (tap, scroll)
 
-extension ViewController5: UICollectionViewDelegate {
+extension ViewController5: UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        if collectionView === gridCV {
-            let row = rows[indexPath.section].title
-            let d = days[indexPath.item]
-            let title = "\(row) - \(DateFormatter.g_ymd.string(from: d))"
-            let alert = UIAlertController(title: title, message: "ここで詳細へ遷移などを実装します。", preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .default))
-            present(alert, animated: true)
+        // ヘッダーや編集セル以外のマスはトグル（ON/OFF）して即反映
+        if indexPath.section >= 1, indexPath.item >= 2 {
+            let rowIndex = indexPath.section
+            let d = days[indexPath.item - 2]
+            toggleOn(rowIndex: rowIndex, date: d)
+            collectionView.reloadItems(at: [indexPath])
+        } else if indexPath.section >= 1, indexPath.item == 1 {
+            // 編集セルをタップ → VC6
+            goToVC6(rowIndex: indexPath.section)
         }
     }
 
-    // スクロール同期（中央が司令塔）
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        if scrollView === gridCV {
-            headerCV.contentOffset.x = gridCV.contentOffset.x
-            sidebarCV.contentOffset.y = gridCV.contentOffset.y
-        } else if scrollView === headerCV {
-            gridCV.contentOffset.x = headerCV.contentOffset.x
-        } else if scrollView === sidebarCV {
-            gridCV.contentOffset.y = sidebarCV.contentOffset.y
+        updateHeaderMonthIfNeeded()
+    }
+
+    // セルサイズ（列ごとに幅を変える）
+    func collectionView(_ collectionView: UICollectionView,
+                        layout collectionViewLayout: UICollectionViewLayout,
+                        sizeForItemAt indexPath: IndexPath) -> CGSize {
+        if indexPath.section == 0 {
+            // ヘッダー
+            let w: CGFloat = (indexPath.item == 0) ? (Grid.titleWidth + Grid.editWidth) : Grid.dayWidth
+            let h: CGFloat = Grid.headerHeight
+            return CGSize(width: w, height: h)
+        } else {
+            // データ行
+            let w: CGFloat
+            switch indexPath.item {
+            case 0: w = Grid.titleWidth
+            case 1: w = Grid.editWidth
+            default: w = Grid.dayWidth
+            }
+            return CGSize(width: w, height: Grid.rowHeight)
         }
     }
+
+    // 行間・列間0
+    func collectionView(_ collectionView: UICollectionView,
+                        layout collectionViewLayout: UICollectionViewLayout,
+                        minimumLineSpacingForSectionAt section: Int) -> CGFloat { 0 }
+    func collectionView(_ collectionView: UICollectionView,
+                        layout collectionViewLayout: UICollectionViewLayout,
+                        minimumInteritemSpacingForSectionAt section: Int) -> CGFloat { 0 }
 }
-
-// MARK: - Helpers
-
-private extension Date {
-    func startOfDay(_ cal: Calendar) -> Date { cal.startOfDay(for: self) }
-    func addingDays(_ n: Int) -> Date { Calendar.current.date(byAdding: .day, value: n, to: self)! }
-    func isBetween(_ a: Date, _ b: Date, by cal: Calendar) -> Bool {
-        let d = cal.startOfDay(for: self)
-        let sa = cal.startOfDay(for: a)
-        let sb = cal.startOfDay(for: b)
-        return (sa ... sb).contains(d)
-    }
-}
-
-private extension UIColor {
-    convenience init?(hex: String?) {
-        guard let hex, hex.hasPrefix("#") else { return nil }
-        let s = String(hex.dropFirst())
-        var v: UInt64 = 0
-        guard Scanner(string: s).scanHexInt64(&v) else { return nil }
-        switch s.count {
-        case 6:
-            self.init(red: CGFloat((v >> 16) & 0xFF)/255.0,
-                      green: CGFloat((v >> 8) & 0xFF)/255.0,
-                      blue: CGFloat(v & 0xFF)/255.0,
-                      alpha: 1.0)
-        case 8:
-            self.init(red: CGFloat((v >> 24) & 0xFF)/255.0,
-                      green: CGFloat((v >> 16) & 0xFF)/255.0,
-                      blue: CGFloat((v >> 8) & 0xFF)/255.0,
-                      alpha: CGFloat(v & 0xFF)/255.0)
-        default:
-            return nil
-        }
-    }
-}
-
-private extension DateFormatter {
-    static let g_day: DateFormatter = {
-        let df = DateFormatter()
-        df.locale = Locale(identifier: "ja_JP")
-        df.calendar = Calendar(identifier: .gregorian)
-        df.dateFormat = "d"
-        return df
-    }()
-    static let g_weekday: DateFormatter = {
-        let df = DateFormatter()
-        df.locale = Locale(identifier: "ja_JP")
-        df.calendar = Calendar(identifier: .gregorian)
-        df.dateFormat = "E"
-        return df
-    }()
-    static let g_ymd: DateFormatter = {
-        let df = DateFormatter()
-        df.locale = Locale(identifier: "ja_JP")
-        df.calendar = Calendar(identifier: .gregorian)
-        df.dateFormat = "yyyy/MM/dd (E)"
-        return df
-    }()
-}
-

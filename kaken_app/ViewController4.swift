@@ -155,6 +155,6 @@ class ViewController4: UIViewController, UITextViewDelegate {
     saveAll()
     printKoudou()
 
-    performSegue(withIdentifier: "toViewController5", sender: nil)
+    performSegue(withIdentifier: "toViewController5", sender: self)
   }
 }

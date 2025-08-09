@@ -5,6 +5,7 @@
 //  Created by Haru Takenaka on 2025/08/08.
 //
 
+import UIKit
 import FSCalendar
 
 class ViewController6: UIViewController, FSCalendarDelegate, FSCalendarDataSource {
@@ -12,6 +13,9 @@ class ViewController6: UIViewController, FSCalendarDelegate, FSCalendarDataSourc
 
   override func viewDidLoad() {
       super.viewDidLoad()
+      
+      print("Calendar type: \(type(of: calendar))")
+      print("Calendar class: \(String(describing: calendar))")
 
     guard let calendar = calendar else {
         print("Calendar outlet not connected")
