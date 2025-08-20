@@ -4,35 +4,40 @@
 //
 //  Created by Haru Takenaka on 2025/08/08.
 //
-
 import UIKit
 import FSCalendar
 
-class ViewController6: UIViewController, FSCalendarDelegate, FSCalendarDataSource {
-  @IBOutlet weak var calendar: FSCalendar!
+final class ViewController6: UIViewController, FSCalendarDelegate, FSCalendarDataSource {
 
-  override func viewDidLoad() {
-      super.viewDidLoad()
-      
-      print("Calendar type: \(type(of: calendar))")
-      print("Calendar class: \(String(describing: calendar))")
+    @IBOutlet weak var calendar: FSCalendar!
 
-    guard let calendar = calendar else {
-        print("Calendar outlet not connected")
-        return
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        print("ViewController6 viewDidLoad called")
+        print("Calendar is nil: \(calendar == nil)")
+        
+        if calendar == nil {
+            print("ERROR: Calendar outlet is not connected!")
+            print("Check Storyboard IBOutlet connection")
+            return
+        }
+        
+        print("Calendar type: \(type(of: calendar!))")
+        
+        calendar.dataSource = self
+        calendar.delegate = self
+        calendar.locale = Locale(identifier: "ja_JP")
+        
+        print("Calendar setup completed")
     }
 
-      calendar.delegate = self
-      calendar.dataSource = self
+    // 例: 選択時の確認
+    func calendar(_ calendar: FSCalendar, didSelect date: Date, at monthPosition: FSCalendarMonthPosition) {
+        print("selected:", date)
+    }
+}
 
-      // 見た目の設定
-      calendar.appearance.todayColor = UIColor.blue
-      calendar.appearance.selectionColor = UIColor.red
-      calendar.appearance.weekdayTextColor = UIColor.black
-      calendar.appearance.headerTitleColor = UIColor.black
-
-
-  }
 
     /*
     // MARK: - Navigation
@@ -44,4 +49,4 @@ class ViewController6: UIViewController, FSCalendarDelegate, FSCalendarDataSourc
     }
     */
 
-}
+

@@ -1,25 +1,25 @@
-//
-//  ViewController1.swift
-//  kaken_app
-//
-//  Created by Haru Takenaka on 2025/08/08.
-//
 
-import UIKit
 import UIKit
 
 class ViewController1: UIViewController {
 
-  @IBOutlet var textField: UITextField!
+    @IBOutlet var textField: UITextField!
+    @IBOutlet weak var nextButton: UIButton!   // ← Storyboardでボタンをここに接続
 
-  @IBAction func nextButton(_ sender: UIButton) {
-    var mokuhyou = textField.text ?? ""
-    UserDefaults.standard.set(mokuhyou, forKey: "kikan")
-    print(mokuhyou)
-    performSegue(withIdentifier: "toViewController2", sender: nil)
-  }
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        print("ViewController1 loaded")
+        print("nextButton is nil: \(nextButton == nil)")
+        print("textField is nil: \(textField == nil)")
+        
+        nextButton?.layer.cornerRadius = 10
+    }
 
-//  override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-//
-//  }
+    @IBAction func nextButton(_ sender: UIButton) {
+        let mokuhyou = textField.text ?? ""
+        UserDefaults.standard.set(mokuhyou, forKey: "mokuhyou")
+        print(mokuhyou)
+        performSegue(withIdentifier: "toViewController2", sender: nil)
+    }
 }

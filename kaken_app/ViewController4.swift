@@ -51,45 +51,45 @@ class ViewController4: UIViewController, UITextViewDelegate {
 
   lazy var koudouArray: [koudou] = [
     koudou(youso: youso1,
-           koudou1: textView1.text ?? "",
-           koudou2: textView2.text ?? "",
-           koudou3: textView3.text ?? "",
-           koudou4: textView4.text ?? ""),
+           koudou1: textView1?.text ?? "",
+           koudou2: textView2?.text ?? "",
+           koudou3: textView3?.text ?? "",
+           koudou4: textView4?.text ?? ""),
     koudou(youso: youso2,
-           koudou1: textView1.text ?? "",
-           koudou2: textView2.text ?? "",
-           koudou3: textView3.text ?? "",
-           koudou4: textView4.text ?? ""),
+           koudou1: textView1?.text ?? "",
+           koudou2: textView2?.text ?? "",
+           koudou3: textView3?.text ?? "",
+           koudou4: textView4?.text ?? ""),
     koudou(youso: youso3,
-           koudou1: textView1.text ?? "",
-           koudou2: textView2.text ?? "",
-           koudou3: textView3.text ?? "",
-           koudou4: textView4.text ?? ""),
+           koudou1: textView1?.text ?? "",
+           koudou2: textView2?.text ?? "",
+           koudou3: textView3?.text ?? "",
+           koudou4: textView4?.text ?? ""),
     koudou(youso: youso4,
-           koudou1: textView1.text ?? "",
-           koudou2: textView2.text ?? "",
-           koudou3: textView3.text ?? "",
-           koudou4: textView4.text ?? ""),
+           koudou1: textView1?.text ?? "",
+           koudou2: textView2?.text ?? "",
+           koudou3: textView3?.text ?? "",
+           koudou4: textView4?.text ?? ""),
     koudou(youso: youso5,
-           koudou1: textView1.text ?? "",
-           koudou2: textView2.text ?? "",
-           koudou3: textView3.text ?? "",
-           koudou4: textView4.text ?? ""),
+           koudou1: textView1?.text ?? "",
+           koudou2: textView2?.text ?? "",
+           koudou3: textView3?.text ?? "",
+           koudou4: textView4?.text ?? ""),
     koudou(youso: youso6,
-           koudou1: textView1.text ?? "",
-           koudou2: textView2.text ?? "",
-           koudou3: textView3.text ?? "",
-           koudou4: textView4.text ?? ""),
+           koudou1: textView1?.text ?? "",
+           koudou2: textView2?.text ?? "",
+           koudou3: textView3?.text ?? "",
+           koudou4: textView4?.text ?? ""),
     koudou(youso: youso7,
-           koudou1: textView1.text ?? "",
-           koudou2: textView2.text ?? "",
-           koudou3: textView3.text ?? "",
-           koudou4: textView4.text ?? ""),
+           koudou1: textView1?.text ?? "",
+           koudou2: textView2?.text ?? "",
+           koudou3: textView3?.text ?? "",
+           koudou4: textView4?.text ?? ""),
     koudou(youso: youso8,
-           koudou1: textView1.text ?? "",
-           koudou2: textView2.text ?? "",
-           koudou3: textView3.text ?? "",
-           koudou4: textView4.text ?? ""),
+           koudou1: textView1?.text ?? "",
+           koudou2: textView2?.text ?? "",
+           koudou3: textView3?.text ?? "",
+           koudou4: textView4?.text ?? ""),
 
   ]
 
@@ -141,11 +141,10 @@ class ViewController4: UIViewController, UITextViewDelegate {
   }
   func printKoudou() {
       for i in 1...8 {
-          print("koudou\(i)")
           for j in 1...4 {
               let key = "koudou\(i)\(j)"
               let value = UserDefaults.standard.string(forKey: key) ?? "（×）"
-            print("\(i)-\(j)",value)
+            print("koudou\(i)\(j)",value)
           }
       }
   }
@@ -156,5 +155,8 @@ class ViewController4: UIViewController, UITextViewDelegate {
     printKoudou()
 
     performSegue(withIdentifier: "toViewController5", sender: self)
+  }
+  @IBAction func nextButton2(_ sender: UIButton) {
+    performSegue(withIdentifier: "toViewController6", sender: self)
   }
 }
