@@ -3,8 +3,8 @@ import UIKit
 
 class ViewController1: UIViewController {
 
-    @IBOutlet var textField: UITextField!
-    @IBOutlet weak var nextButton: UIButton!   // ← Storyboardでボタンをここに接続
+    @IBOutlet var textField: UITextField?
+    @IBOutlet weak var nextButton: UIButton?   // ← Storyboardでボタンをここに接続
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -17,7 +17,7 @@ class ViewController1: UIViewController {
     }
 
     @IBAction func nextButton(_ sender: UIButton) {
-        let mokuhyou = textField.text ?? ""
+        let mokuhyou = textField?.text ?? ""
         UserDefaults.standard.set(mokuhyou, forKey: "mokuhyou")
         print(mokuhyou)
         performSegue(withIdentifier: "toViewController2", sender: nil)

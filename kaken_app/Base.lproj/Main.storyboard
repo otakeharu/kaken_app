@@ -240,7 +240,7 @@
                     <connections>
                         <outlet property="mokuhyoulabel" destination="4pG-Jf-dvO" id="bX4-gu-clY"/>
                         <outlet property="textView1" destination="y82-mV-07V" id="rev-Rb-grn"/>
-                        <outlet property="textView2" destination="uDw-EL-uyr" id="H7v-uN-iha"/>
+                        <outlet property="textView2" destination="uDw-EL-uyr" id="NB6-52-nPo"/>
                         <outlet property="textView3" destination="Nc3-gJ-BUK" id="aJv-5X-Xg1"/>
                         <outlet property="textView4" destination="ONz-K2-VzQ" id="xQi-eW-CeS"/>
                         <outlet property="textView5" destination="59X-vD-gl3" id="0ss-5o-zRq"/>
@@ -363,6 +363,9 @@
                     </navigationItem>
                     <connections>
                         <outlet property="textView1" destination="nYp-A6-TAG" id="Pb3-wf-bSv"/>
+                        <outlet property="textView2" destination="WNh-zA-dhU" id="kOf-ni-Rhh"/>
+                        <outlet property="textView3" destination="00o-Eq-dAC" id="30y-qF-JCd"/>
+                        <outlet property="textView4" destination="kiG-J6-kB8" id="Gda-gh-thh"/>
                         <outlet property="yousoLabel" destination="piw-Ze-bIO" id="cje-Ic-w1x"/>
                         <segue destination="tRk-cP-cm5" kind="show" identifier="toViewController5" id="wjt-sn-PsY"/>
                         <segue destination="Iid-pQ-THr" kind="show" identifier="toViewController6" id="gmM-jJ-17v"/>
