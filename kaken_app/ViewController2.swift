@@ -9,16 +9,29 @@ import UIKit
 
 class ViewController2: UIViewController {
 
-  @IBOutlet var textField: UITextField!
+  @IBOutlet weak var datePicker: UIDatePicker!
+  @IBOutlet weak var nextButton: UIButton!
 
-  @IBAction func nextButton(_ sender: UIButton) {
-    let kikan = textField.text ?? ""
+
+
+  override func viewDidLoad() {
+    super.viewDidLoad()
+
+    datePicker.datePickerMode = .date
+    datePicker.locale = Locale(identifier: "ja_JP")
+    datePicker.calendar = Calendar(identifier: .gregorian)
+    if #available(iOS 13.4, *) {
+        datePicker.preferredDatePickerStyle = .wheels
+    }
+    nextButton.layer.cornerRadius = 15
+    nextButton.clipsToBounds = true
+  }
+
+  @IBAction func nextButtontapped(_ sender: UIButton) {
+    let kikan = datePicker.date
     UserDefaults.standard.set(kikan, forKey: "kikan")
     print(kikan)
     performSegue(withIdentifier: "toViewController3", sender: nil)
   }
 
-//  override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-//
-//  }
 }

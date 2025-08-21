@@ -10,6 +10,7 @@ import UIKit
 class ViewController4: UIViewController, UITextViewDelegate {
 
   @IBOutlet var yousoLabel: UILabel!
+  @IBOutlet weak var nextButton: UIButton!
   @IBOutlet var textView1: UITextView!
   @IBOutlet var textView2: UITextView!
   @IBOutlet var textView3: UITextView!
@@ -46,6 +47,8 @@ class ViewController4: UIViewController, UITextViewDelegate {
     }
 
     setUI()
+    nextButton.layer.cornerRadius = 15
+    nextButton.clipsToBounds = true
   }
 
 
@@ -149,7 +152,7 @@ class ViewController4: UIViewController, UITextViewDelegate {
       }
   }
 
-  @IBAction func nextButton(_ sender: UIButton) {
+  @IBAction func nextButtontapped(_ sender: UIButton) {
     savePage()
     saveAll()
     printKoudou()
