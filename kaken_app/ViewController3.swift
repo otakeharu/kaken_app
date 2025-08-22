@@ -22,28 +22,27 @@ class ViewController3: UIViewController, UITextViewDelegate {
   @IBOutlet var textView7: UITextView!
   @IBOutlet var textView8: UITextView!
 
-  @IBAction func saveButtontapped(){
-    var youso1 = textView1.text ?? ""
-    var youso2 = textView2.text ?? ""
-    var youso3 = textView3.text ?? ""
-    var youso4 = textView4.text ?? ""
-    var youso5 = textView5.text ?? ""
-    var youso6 = textView6.text ?? ""
-    var youso7 = textView7.text ?? ""
-    var youso8 = textView8.text ?? ""
+//  @IBAction func saveButtontapped(){
+//    var youso1 = textView1.text ?? ""
+//    var youso2 = textView2.text ?? ""
+//    var youso3 = textView3.text ?? ""
+//    var youso4 = textView4.text ?? ""
+//    var youso5 = textView5.text ?? ""
+//    var youso6 = textView6.text ?? ""
+//    var youso7 = textView7.text ?? ""
+//    var youso8 = textView8.text ?? ""
+//
+//    UserDefaults.standard.set(youso1, forKey: "youso1")
+//    UserDefaults.standard.set(youso2, forKey: "youso2")
+//    UserDefaults.standard.set(youso3, forKey: "youso3")
+//    UserDefaults.standard.set(youso4, forKey: "youso4")
+//    UserDefaults.standard.set(youso5, forKey: "youso5")
+//    UserDefaults.standard.set(youso6, forKey: "youso6")
+//    UserDefaults.standard.set(youso7, forKey: "youso7")
+//    UserDefaults.standard.set(youso8, forKey: "youso8")
+//    print(youso1,youso2,youso3,youso4,youso5,youso6,youso7,youso8)
+//  }
 
-    UserDefaults.standard.set(youso1, forKey: "youso1")
-    UserDefaults.standard.set(youso2, forKey: "youso2")
-    UserDefaults.standard.set(youso3, forKey: "youso3")
-    UserDefaults.standard.set(youso4, forKey: "youso4")
-    UserDefaults.standard.set(youso5, forKey: "youso5")
-    UserDefaults.standard.set(youso6, forKey: "youso6")
-    UserDefaults.standard.set(youso7, forKey: "youso7")
-    UserDefaults.standard.set(youso8, forKey: "youso8")
-    print(youso1,youso2,youso3,youso4,youso5,youso6,youso7,youso8)
-
-
-  }
   @IBAction func nextButtontapped(_ sender: UIButton) {
     var youso1 = textView1.text ?? ""
     var youso2 = textView2.text ?? ""
@@ -90,10 +89,10 @@ class ViewController3: UIViewController, UITextViewDelegate {
         textView7.text = UserDefaults.standard.string(forKey: "youso7") ?? ""
         textView8.text = UserDefaults.standard.string(forKey: "youso8") ?? ""
 
-      nextButton.layer.cornerRadius = 15
+      nextButton.layer.cornerRadius = 20
       nextButton.clipsToBounds = true
-      saveButton.layer.cornerRadius = 15
-      saveButton.clipsToBounds = true
+//      saveButton.layer.cornerRadius = 20
+//      saveButton.clipsToBounds = true
     }
     
     func textViewDidChange(_ textView: UITextView) {

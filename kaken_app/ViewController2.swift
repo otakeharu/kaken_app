@@ -23,7 +23,8 @@ class ViewController2: UIViewController {
     if #available(iOS 13.4, *) {
         datePicker.preferredDatePickerStyle = .wheels
     }
-    nextButton.layer.cornerRadius = 15
+    nextButton.layer.cornerRadius = 20
+
     nextButton.clipsToBounds = true
   }
 

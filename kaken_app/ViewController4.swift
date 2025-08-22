@@ -47,7 +47,7 @@ class ViewController4: UIViewController, UITextViewDelegate {
     }
 
     setUI()
-    nextButton.layer.cornerRadius = 15
+    nextButton.layer.cornerRadius = 20
     nextButton.clipsToBounds = true
   }
 
