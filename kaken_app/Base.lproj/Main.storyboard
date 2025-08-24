@@ -418,9 +418,12 @@
                                     <view contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Qsu-b9-qBC">
                                         <rect key="frame" x="0.0" y="-88" width="393" height="715"/>
                                         <subviews>
-                                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="rzO-Aa-6Ex">
-                                                <rect key="frame" x="21" y="88" width="240" height="206"/>
+                                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="rzO-Aa-6Ex">
+                                                <rect key="frame" x="21" y="88" width="100" height="206"/>
                                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="100" id="guk-nq-sVA"/>
+                                                </constraints>
                                                 <collectionViewFlowLayout key="collectionViewLayout" automaticEstimatedItemSize="YES" minimumLineSpacing="10" minimumInteritemSpacing="10" id="vRe-Fh-bBC">
                                                     <size key="itemSize" width="128" height="128"/>
                                                     <size key="headerReferenceSize" width="0.0" height="0.0"/>
@@ -429,7 +432,7 @@
                                                 </collectionViewFlowLayout>
                                                 <cells>
                                                     <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="fhr-rF-8Ex">
-                                                        <rect key="frame" x="56" y="0.0" width="128" height="128"/>
+                                                        <rect key="frame" x="-14" y="0.0" width="128" height="128"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                         <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="tyZ-DL-UEJ">
                                                             <rect key="frame" x="0.0" y="0.0" width="128" height="128"/>
@@ -476,7 +479,7 @@
                     <navigationItem key="navigationItem" id="5Qb-vD-0oW"/>
                     <connections>
                         <outlet property="collectionView" destination="rzO-Aa-6Ex" id="Qr8-NT-MMw"/>
-                        <outlet property="dateHeader" destination="6vV-SN-4It" id="enM-ZZ-2Bh"/>
+                        <outlet property="collectionWidth" destination="guk-nq-sVA" id="Aet-P6-36I"/>
                         <outlet property="hScrollView" destination="EnQ-br-R2u" id="i5H-LF-byD"/>
                         <segue destination="Iid-pQ-THr" kind="show" identifier="toViewController6" id="Ibn-Iv-5bS"/>
                     </connections>
