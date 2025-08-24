@@ -63,31 +63,7 @@ private func monthEnd(of date: Date) -> Date {
     return jpCal.date(byAdding: .day, value: -1, to: next)!
 }
 
-// MARK: - Cells（枠線は全て1px、今日強調なし、ONは薄い青）
-final class HeaderMonthCell: UICollectionViewCell {
-    static let reuse = "HeaderMonthCell"
-    let label = UILabel()
-    override init(frame: CGRect) { super.init(frame: frame); setup() }
-    required init?(coder: NSCoder) { super.init(coder: coder); setup() }
-    private func setup() {
-        contentView.backgroundColor = .systemGray6
-        contentView.layer.borderWidth = Grid.lineWidth
-        contentView.layer.borderColor = UIColor.separator.cgColor
-        contentView.clipsToBounds = true
-
-        label.font = .systemFont(ofSize: 15, weight: .semibold)
-        label.textAlignment = .center
-        contentView.addSubview(label)
-        label.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            label.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 4),
-            label.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -4),
-            label.topAnchor.constraint(equalTo: contentView.topAnchor),
-            label.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
-        ])
-    }
-}
-
+// MARK: - Cells
 final class HeaderDayCell: UICollectionViewCell {
     static let reuse = "HeaderDayCell"
     let label = UILabel()
@@ -99,14 +75,12 @@ final class HeaderDayCell: UICollectionViewCell {
         contentView.layer.borderWidth = Grid.lineWidth
         contentView.layer.borderColor = UIColor.separator.cgColor
         contentView.clipsToBounds = true
-
         let stack = UIStackView(arrangedSubviews: [label, wday])
         stack.axis = .vertical; stack.alignment = .center; stack.spacing = 0
         label.font = .systemFont(ofSize: 15, weight: .semibold)
         label.textAlignment = .center
         wday.font = .systemFont(ofSize: 10); wday.textColor = .secondaryLabel
         wday.textAlignment = .center
-
         contentView.addSubview(stack)
         stack.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -131,7 +105,6 @@ final class RowTitleCell: UICollectionViewCell {
         contentView.layer.borderWidth = Grid.lineWidth
         contentView.layer.borderColor = UIColor.separator.cgColor
         contentView.clipsToBounds = true
-
         label.font = .systemFont(ofSize: 14)
         label.textAlignment = .left
         contentView.addSubview(label)
@@ -155,7 +128,6 @@ final class RowEditCell: UICollectionViewCell {
         contentView.layer.borderWidth = Grid.lineWidth
         contentView.layer.borderColor = UIColor.separator.cgColor
         contentView.clipsToBounds = true
-
         button.setTitle("編集", for: .normal)
         contentView.addSubview(button)
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -182,19 +154,20 @@ final class DayStateCell: UICollectionViewCell {
     }
     func configure(on: Bool) {
         contentView.backgroundColor = on
-            ? UIColor.systemBlue.withAlphaComponent(0.25) // ON は薄い青
+            ? UIColor.systemBlue.withAlphaComponent(0.25)
             : .systemBackground
     }
 }
 
-// MARK: - Main VC（横：UIScrollView / 縦：UICollectionView）
+// MARK: - Main VC（上：dateHeader / 下：collectionView（縦）＋外側hScrollView（横））
 final class ViewController5: UIViewController {
 
-    // 外側（横スクロール）と内側コレクション幅制約
+    // 外側（横スクロール）
     @IBOutlet weak var hScrollView: UIScrollView!
-    @IBOutlet weak var collectionWidth: NSLayoutConstraint!
-
+    // 下段のメイングリッド（縦スクロール）
     @IBOutlet weak var collectionView: UICollectionView!
+    // 上段の日付ヘッダー（横一列・固定表示）
+    @IBOutlet weak var dateHeader: UICollectionView!
 
     private var createdAt: Date = Date() // 表示開始
     private var goalEnd: Date   = Date() // 表示終了
@@ -205,9 +178,32 @@ final class ViewController5: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+
         setupDataFromUserDefaults()
         setupCollection()
-        updateContentWidth() // 横幅反映
+        setupDateHeader()
+
+        // ナビ下に隠れないよう自動調整
+        dateHeader.contentInsetAdjustmentBehavior = .automatic
+        collectionView.contentInsetAdjustmentBehavior = .automatic
+
+        // 本体の横幅はコードで管理
+        collectionView.translatesAutoresizingMaskIntoConstraints = true
+
+        // ScrollView 設定
+        hScrollView.delegate = self
+        hScrollView.showsHorizontalScrollIndicator = true
+        hScrollView.alwaysBounceHorizontal = true
+
+        // 見た目（任意）
+        let ap = UINavigationBarAppearance()
+        ap.configureWithDefaultBackground()
+        navigationController?.navigationBar.scrollEdgeAppearance = ap
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        updateContentWidthAndFrames()
     }
 
     // MARK: - Setup
@@ -237,69 +233,85 @@ final class ViewController5: UIViewController {
         ud.set(ymdString(goalEnd),   forKey: UDKey.goalEnd)
 
         days = daysArray(from: createdAt, to: goalEnd)
+        if days.isEmpty {
+            goalEnd = monthEnd(of: createdAt)
+            days = daysArray(from: createdAt, to: goalEnd)
+        }
 
         for i in 1...Grid.maxRows {
             koudouTitles[i - 1] = ud.string(forKey: UDKey.koudou(i)) ?? "koudou\(i)"
         }
+
+        // 初期のナビタイトル（月）
+        if let first = days.first { self.navigationItem.title = monthString(first) }
     }
 
     private func setupCollection() {
-        // 外側（横スクロール）
-        hScrollView.delegate = self
-        hScrollView.showsHorizontalScrollIndicator = true
-        hScrollView.alwaysBounceHorizontal = true
-
-        // 内側（縦スクロール）
         collectionView.dataSource = self
         collectionView.delegate   = self
 
-        collectionView.register(HeaderMonthCell.self, forCellWithReuseIdentifier: HeaderMonthCell.reuse)
-        collectionView.register(HeaderDayCell.self,   forCellWithReuseIdentifier: HeaderDayCell.reuse)
-        collectionView.register(RowTitleCell.self,    forCellWithReuseIdentifier: RowTitleCell.reuse)
-        collectionView.register(RowEditCell.self,     forCellWithReuseIdentifier: RowEditCell.reuse)
-        collectionView.register(DayStateCell.self,    forCellWithReuseIdentifier: DayStateCell.reuse)
+        collectionView.register(RowTitleCell.self, forCellWithReuseIdentifier: RowTitleCell.reuse)
+        collectionView.register(RowEditCell.self,  forCellWithReuseIdentifier: RowEditCell.reuse)
+        collectionView.register(DayStateCell.self, forCellWithReuseIdentifier: DayStateCell.reuse)
 
         if let fl = collectionView.collectionViewLayout as? UICollectionViewFlowLayout {
-            fl.scrollDirection = .vertical          // 縦専用
-            fl.estimatedItemSize = .zero            // 自動サイズ無効（重要）
+            fl.scrollDirection = .vertical
+            fl.estimatedItemSize = .zero
             fl.minimumInteritemSpacing = 0
             fl.minimumLineSpacing = 0
             fl.sectionInset = .zero
             fl.sectionInsetReference = .fromContentInset
-            fl.itemSize = .zero                      // sizeForItemAt を使う
+            fl.itemSize = CGSize(width: Grid.dayWidth, height: Grid.rowHeight)
         }
 
         collectionView.alwaysBounceHorizontal = false
         collectionView.isDirectionalLockEnabled = true
         collectionView.alwaysBounceVertical = true
+        collectionView.decelerationRate = .fast
     }
 
-    // MARK: - 横幅＝内容幅（横スクロールの要）
-    private func updateContentWidth() {
+    private func setupDateHeader() {
+        dateHeader.dataSource = self
+        dateHeader.delegate   = self
+
+        dateHeader.register(HeaderDayCell.self, forCellWithReuseIdentifier: HeaderDayCell.reuse)
+
+        let headerLayout = UICollectionViewFlowLayout()
+        headerLayout.itemSize = CGSize(width: Grid.dayWidth, height: Grid.headerHeight)
+        headerLayout.minimumInteritemSpacing = 0
+        headerLayout.minimumLineSpacing = 0
+        headerLayout.scrollDirection = .horizontal
+        headerLayout.estimatedItemSize = .zero
+        headerLayout.sectionInset = .zero
+        dateHeader.setCollectionViewLayout(headerLayout, animated: false)
+
+        dateHeader.showsVerticalScrollIndicator = false
+        dateHeader.alwaysBounceHorizontal = true
+
+        // 左固定列（タイトル+編集）ぶんの余白で位置合わせ
+        dateHeader.contentInset.left = Grid.titleWidth + Grid.editWidth
+
+        dateHeader.reloadData()
+    }
+
+    // MARK: - 幅・フレーム更新
+    private func updateContentWidthAndFrames() {
+        // 全体の横幅 = 左固定列 + 日数 * 列幅
         let contentWidth = Grid.titleWidth + Grid.editWidth + CGFloat(days.count) * Grid.dayWidth
-        collectionWidth.constant = contentWidth
-        view.layoutIfNeeded()
+
+        // collectionView のフレーム幅だけ更新（位置と高さは維持）
+        let originInScroll = collectionView.frame.origin
+        var frame = collectionView.frame
+        frame.origin = originInScroll
+        frame.size.width = contentWidth
+        collectionView.frame = frame
+
+        // ScrollView に幅と高さを通知
+        hScrollView.contentSize = CGSize(width: contentWidth, height: collectionView.frame.height)
     }
 
-    // MARK: - Helpers
-    private func dateForHeaderItem(_ item: Int) -> Date? {
-        let dayIndex = item - 1 // item1 -> days[0]
-        guard dayIndex >= 0 && dayIndex < days.count else { return nil }
-        return days[dayIndex]
-    }
-    private func isOn(rowIndex: Int, date: Date) -> Bool {
-        let key = UDKey.onoff(row: rowIndex, date: ymdString(date))
-        return UserDefaults.standard.bool(forKey: key)
-    }
-    private func toggleOn(rowIndex: Int, date: Date) {
-        let ud = UserDefaults.standard
-        let key = UDKey.onoff(row: rowIndex, date: ymdString(date))
-        ud.set(!ud.bool(forKey: key), forKey: key)
-    }
-
-    // 右端近くで翌月を自動追加（不要なら呼び出しを外してOK）
+    // 右端近くで翌月を追加
     private func appendNextMonthIfNeeded() {
-        // 残り7列以内で発火
         let rightEdge = hScrollView.contentOffset.x + hScrollView.bounds.width
         let threshold = hScrollView.contentSize.width - Grid.dayWidth * 7
         guard rightEdge >= threshold else { return }
@@ -317,22 +329,22 @@ final class ViewController5: UIViewController {
         UserDefaults.standard.set(ymdString(goalEnd), forKey: UDKey.goalEnd)
 
         collectionView.reloadData()
-        updateContentWidth()
+        dateHeader.reloadData()
+        updateContentWidthAndFrames()
     }
 
-    // 横スクロール位置からヘッダー左端（月）を更新
+    // 横スクロール位置からナビの月表示を更新
     private func updateHeaderMonthIfNeeded() {
         let x = hScrollView.contentOffset.x
-        let threshold = Grid.titleWidth + Grid.editWidth // 日列が始まる位置
+        let threshold = Grid.titleWidth + Grid.editWidth
         var idx = 0
         if x > threshold {
             let dx = x - threshold
-            idx = max(0, Int(round(dx / Grid.dayWidth)))
-            idx = min(idx, max(0, days.count - 1))
+            idx = min(max(0, Int(round(dx / Grid.dayWidth))), max(0, days.count - 1))
         }
         if idx != firstVisibleDayIndex {
             firstVisibleDayIndex = idx
-            collectionView.reloadItems(at: [IndexPath(item: 0, section: 0)])
+            self.navigationItem.title = monthString(days[firstVisibleDayIndex])
         }
     }
 
@@ -347,29 +359,27 @@ final class ViewController5: UIViewController {
 
 // MARK: - DataSource
 extension ViewController5: UICollectionViewDataSource {
-    func numberOfSections(in collectionView: UICollectionView) -> Int { 1 + Grid.maxRows }
+    func numberOfSections(in collectionView: UICollectionView) -> Int {
+        if collectionView === dateHeader { return 1 }        // ヘッダーは1行のみ
+        return Grid.maxRows                                   // 本体は行数ぶん
+    }
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        section == 0 ? (1 + days.count) : (2 + days.count)
+        if collectionView === dateHeader { return days.count }        // 日数ぶん
+        return 2 + days.count                                         // タイトル+編集+日数ぶん
     }
 
     func collectionView(_ collectionView: UICollectionView,
                         cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-
-        if indexPath.section == 0 {
-            if indexPath.item == 0 {
-                let cell = collectionView.dequeueReusableCell(
-                    withReuseIdentifier: HeaderMonthCell.reuse, for: indexPath) as! HeaderMonthCell
-                cell.label.text = days.isEmpty ? "" : monthString(days[firstVisibleDayIndex])
-                return cell
-            } else {
-                let cell = collectionView.dequeueReusableCell(
-                    withReuseIdentifier: HeaderDayCell.reuse, for: indexPath) as! HeaderDayCell
-                if let d = dateForHeaderItem(indexPath.item) { cell.configure(date: d) }
-                return cell
-            }
+        if collectionView === dateHeader {
+            let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: HeaderDayCell.reuse, for: indexPath
+            ) as! HeaderDayCell
+            cell.configure(date: days[indexPath.item])
+            return cell
         } else {
-            let rowIndex = indexPath.section // 1..24
+            // 本体：セクション=行（0始まり）。UDは1始まりなので +1 して扱う
+            let rowIndex = indexPath.section + 1
             switch indexPath.item {
             case 0:
                 let cell = collectionView.dequeueReusableCell(
@@ -384,8 +394,10 @@ extension ViewController5: UICollectionViewDataSource {
             default:
                 let cell = collectionView.dequeueReusableCell(
                     withReuseIdentifier: DayStateCell.reuse, for: indexPath) as! DayStateCell
-                let d = days[indexPath.item - 2]
-                cell.configure(on: isOn(rowIndex: rowIndex, date: d))
+                let idx = indexPath.item - 2
+                if idx >= 0 && idx < days.count {
+                    cell.configure(on: isOn(rowIndex: rowIndex, date: days[idx]))
+                }
                 return cell
             }
         }
@@ -396,31 +408,23 @@ extension ViewController5: UICollectionViewDataSource {
 extension ViewController5: UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UIScrollViewDelegate {
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        if indexPath.section >= 1, indexPath.item >= 2 {
-            let rowIndex = indexPath.section
+        if collectionView === dateHeader { return } // ヘッダーは何もしない
+        let rowIndex = indexPath.section + 1
+        if indexPath.item >= 2 {
             let d = days[indexPath.item - 2]
             toggleOn(rowIndex: rowIndex, date: d)
             collectionView.reloadItems(at: [indexPath])
-        } else if indexPath.section >= 1, indexPath.item == 1 {
-            goToVC6(rowIndex: indexPath.section)
+        } else if indexPath.item == 1 {
+            goToVC6(rowIndex: rowIndex)
         }
     }
 
-    // 横スクロールは外側 UIScrollView を監視
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        if scrollView === hScrollView {
-            updateHeaderMonthIfNeeded()
-            appendNextMonthIfNeeded() // 右端付近で翌月を追加（不要ならコメントアウト）
-        }
-    }
-
-    // セルの固定サイズ（必須）
+    // セルサイズ
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         sizeForItemAt indexPath: IndexPath) -> CGSize {
-        if indexPath.section == 0 {
-            let w: CGFloat = (indexPath.item == 0) ? (Grid.titleWidth + Grid.editWidth) : Grid.dayWidth
-            return CGSize(width: w, height: Grid.headerHeight)
+        if collectionView === dateHeader {
+            return CGSize(width: Grid.dayWidth, height: Grid.headerHeight)
         } else {
             let w: CGFloat = (indexPath.item == 0) ? Grid.titleWidth
                          : (indexPath.item == 1) ? Grid.editWidth
@@ -436,4 +440,30 @@ extension ViewController5: UICollectionViewDelegate, UICollectionViewDelegateFlo
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         minimumInteritemSpacingForSectionAt section: Int) -> CGFloat { 0 }
+
+    // 横スクロール同期（hScrollView ⇄ dateHeader）
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        if scrollView === hScrollView {
+            updateHeaderMonthIfNeeded()
+            appendNextMonthIfNeeded()
+            dateHeader.contentOffset.x = hScrollView.contentOffset.x
+        } else if scrollView === dateHeader {
+            var off = hScrollView.contentOffset
+            off.x = dateHeader.contentOffset.x
+            hScrollView.setContentOffset(off, animated: false)
+        }
+    }
+}
+
+// MARK: - Helpers
+extension ViewController5 {
+    private func isOn(rowIndex: Int, date: Date) -> Bool {
+        let key = UDKey.onoff(row: rowIndex, date: ymdString(date))
+        return UserDefaults.standard.bool(forKey: key)
+    }
+    private func toggleOn(rowIndex: Int, date: Date) {
+        let ud = UserDefaults.standard
+        let key = UDKey.onoff(row: rowIndex, date: ymdString(date))
+        ud.set(!ud.bool(forKey: key), forKey: key)
+    }
 }

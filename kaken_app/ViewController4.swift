@@ -159,7 +159,5 @@ class ViewController4: UIViewController, UITextViewDelegate {
 
     performSegue(withIdentifier: "toViewController5", sender: self)
   }
-  @IBAction func nextButton2(_ sender: UIButton) {
-    performSegue(withIdentifier: "toViewController6", sender: self)
-  }
+
 }
