@@ -21,6 +21,10 @@
 		49F89F5E2E45C45800A25E5B /* FSCalendar in Frameworks */ = {isa = PBXBuildFile; productRef = 49F89F5D2E45C45800A25E5B /* FSCalendar */; };
 		49F89F602E45CCDA00A25E5B /* ViewController1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F89F5F2E45CCD900A25E5B /* ViewController1.swift */; };
 		49F89F622E5A881400A25E5B /* ViewController0.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F89F612E5A881400A25E5B /* ViewController0.swift */; };
+		49F89F6D2E5CAA9000A25E5B /* RowTitleCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F89F6B2E5CAA9000A25E5B /* RowTitleCell.swift */; };
+		49F89F6E2E5CAA9000A25E5B /* RowTitleCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 49F89F6C2E5CAA9000A25E5B /* RowTitleCell.xib */; };
+		49F89F712E5CB0B100A25E5B /* RowEditCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F89F6F2E5CB0B100A25E5B /* RowEditCell.swift */; };
+		49F89F722E5CB0B100A25E5B /* RowEditCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 49F89F702E5CB0B100A25E5B /* RowEditCell.xib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -39,6 +43,10 @@
 		49F89F5A2E4587AA00A25E5B /* ViewController6.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController6.swift; sourceTree = "<group>"; };
 		49F89F5F2E45CCD900A25E5B /* ViewController1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController1.swift; sourceTree = "<group>"; };
 		49F89F612E5A881400A25E5B /* ViewController0.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController0.swift; sourceTree = "<group>"; };
+		49F89F6B2E5CAA9000A25E5B /* RowTitleCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RowTitleCell.swift; sourceTree = "<group>"; };
+		49F89F6C2E5CAA9000A25E5B /* RowTitleCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = RowTitleCell.xib; sourceTree = "<group>"; };
+		49F89F6F2E5CB0B100A25E5B /* RowEditCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RowEditCell.swift; sourceTree = "<group>"; };
+		49F89F702E5CB0B100A25E5B /* RowEditCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = RowEditCell.xib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -81,6 +89,10 @@
 				49F89F522E39EE4600A25E5B /* ViewController4.swift */,
 				49F89F542E3DA74100A25E5B /* koudou.swift */,
 				49F89F562E44566600A25E5B /* ViewController5.swift */,
+				49F89F6C2E5CAA9000A25E5B /* RowTitleCell.xib */,
+				49F89F6B2E5CAA9000A25E5B /* RowTitleCell.swift */,
+				49F89F702E5CB0B100A25E5B /* RowEditCell.xib */,
+				49F89F6F2E5CB0B100A25E5B /* RowEditCell.swift */,
 				49F89F5A2E4587AA00A25E5B /* ViewController6.swift */,
 				499461322E2F4A63007AD23B /* Main.storyboard */,
 				499461352E2F4A67007AD23B /* Assets.xcassets */,
@@ -156,7 +168,9 @@
 			files = (
 				499461362E2F4A67007AD23B /* Assets.xcassets in Resources */,
 				499461392E2F4A67007AD23B /* Base in Resources */,
+				49F89F722E5CB0B100A25E5B /* RowEditCell.xib in Resources */,
 				499461342E2F4A63007AD23B /* Base in Resources */,
+				49F89F6E2E5CAA9000A25E5B /* RowTitleCell.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -169,10 +183,12 @@
 			files = (
 				49F89F602E45CCDA00A25E5B /* ViewController1.swift in Sources */,
 				49F89F622E5A881400A25E5B /* ViewController0.swift in Sources */,
+				49F89F712E5CB0B100A25E5B /* RowEditCell.swift in Sources */,
 				49F89F512E2F840300A25E5B /* ViewController3.swift in Sources */,
 				49F89F532E39EE4600A25E5B /* ViewController4.swift in Sources */,
 				49F89F4F2E2F619400A25E5B /* ViewController2.swift in Sources */,
 				49F89F572E44566600A25E5B /* ViewController5.swift in Sources */,
+				49F89F6D2E5CAA9000A25E5B /* RowTitleCell.swift in Sources */,
 				4994612D2E2F4A63007AD23B /* AppDelegate.swift in Sources */,
 				49F89F5B2E4587AA00A25E5B /* ViewController6.swift in Sources */,
 				49F89F552E3DA74100A25E5B /* koudou.swift in Sources */,
