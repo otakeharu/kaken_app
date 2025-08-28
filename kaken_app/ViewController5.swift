@@ -2,8 +2,8 @@ import UIKit
 
 // MARK: - Constants（Storyboardの数値と一致）
 private enum Grid {
-    static let titleWidth: CGFloat   = 120
-    static let editWidth: CGFloat    = 80
+    static let titleWidth: CGFloat   = 160
+    static let editWidth: CGFloat    = 40
     static let dayWidth: CGFloat     = 44
     static let rowHeight: CGFloat    = 44
     static let headerHeight: CGFloat = 44
@@ -54,8 +54,12 @@ private func daysArray(from start: Date, to end: Date) -> [Date] {
 private enum UDKey {
     static let createdAt   = "gantt.createdAt"
     static let goalEnd     = "gantt.goalEnd"
-    static func koudou(_ i: Int) -> String { "koudou\(i)" } // koudou1..24
+
+    // 例: (row=1, col=3) -> "koudou13"
+    static func koudou(row: Int, col: Int) -> String { "koudou\(row)\(col)" }
+
     static func onoff(row: Int, date: String) -> String { "onoff_\(row)_\(date)" }
+
 }
 
 // MARK: - 右本体セル（Storyboard プロトタイプでもOK）
@@ -136,8 +140,12 @@ final class ViewController5: UIViewController {
             days = daysArray(from: createdAt, to: goalEnd)
         }
 
-        for i in 1...Grid.maxRows {
-            titles[i - 1] = ud.string(forKey: UDKey.koudou(i)) ?? "koudou\(i)"
+      for rowIndex in 1...Grid.maxRows { // 1..24
+          let (row, col) = elementRowAndCol(forRowIndex: rowIndex)
+          let key = UDKey.koudou(row: row, col: col) // "koudou11" .. "koudou84"
+          titles[rowIndex - 1] = ud.string(forKey: key) ?? key
+
+
         }
     }
 
@@ -351,3 +359,11 @@ private extension DateFormatter {
         let df = DateFormatter(); df.calendar = cal; df.locale = loc; df.dateFormat = format; return df
     }
 }
+
+// MARK: - Helper
+private func elementRowAndCol(forRowIndex rowIndex: Int) -> (row: Int, col: Int) {
+    let row = (rowIndex - 1) / 4 + 1   // 1..8   （要素番号）
+    let col = (rowIndex - 1) % 4 + 1   // 1..4   （その要素の第何行動）
+    return (row, col)
+}
+
