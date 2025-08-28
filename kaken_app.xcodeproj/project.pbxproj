@@ -84,9 +84,9 @@
 		4994612B2E2F4A63007AD23B /* kaken_app */ = {
 			isa = PBXGroup;
 			children = (
-				499461322E2F4A63007AD23B /* Main.storyboard */,
 				4994612C2E2F4A63007AD23B /* AppDelegate.swift */,
 				4994612E2E2F4A63007AD23B /* SceneDelegate.swift */,
+				499461322E2F4A63007AD23B /* Main.storyboard */,
 				49F89F612E5A881400A25E5B /* ViewController0.swift */,
 				49F89F5F2E45CCD900A25E5B /* ViewController1.swift */,
 				49F89F4E2E2F619400A25E5B /* ViewController2.swift */,

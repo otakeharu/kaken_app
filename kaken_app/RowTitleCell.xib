@@ -16,7 +16,7 @@
                 <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="75x-cK-xHu" customClass="titleLabel">
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="75x-cK-xHu">
                         <rect key="frame" x="8" y="0.0" width="34" height="50"/>
                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                         <nil key="textColor"/>
@@ -30,6 +30,9 @@
                     <constraint firstItem="75x-cK-xHu" firstAttribute="leading" secondItem="QlV-6w-wrE" secondAttribute="leading" constant="8" id="qRZ-jG-G90"/>
                 </constraints>
             </collectionViewCellContentView>
+            <connections>
+                <outlet property="titleLabel" destination="75x-cK-xHu" id="WDK-nh-MIL"/>
+            </connections>
             <point key="canvasLocation" x="36.641221374045799" y="0.70422535211267612"/>
         </collectionViewCell>
     </objects>
