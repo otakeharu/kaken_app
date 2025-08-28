@@ -16,7 +16,7 @@ private func pixelAlign(_ x: CGFloat) -> CGFloat {
     return (x * s).rounded() / s
 }
 
-// MARK: - Date utils
+// MARK: - Date utils（VC内で完結させる）
 private let jpCal    = Calendar(identifier: .gregorian)
 private let jpLocale = Locale(identifier: "ja_JP")
 
@@ -58,42 +58,8 @@ private enum UDKey {
     static func onoff(row: Int, date: String) -> String { "onoff_\(row)_\(date)" }
 }
 
-// MARK: - Cells
-// これらは Storyboard の Prototype でも XIB でもOK（今回は RowTitle/RowEdit をXIBで使う）
-final class HeaderDayCell: UICollectionViewCell { // Reuse: "HeaderDayCell"
-    @IBOutlet weak var dayLabel: UILabel!
-    @IBOutlet weak var wdayLabel: UILabel!
-    func configure(date: Date) {
-        contentView.layer.borderWidth = Grid.lineWidth
-        contentView.layer.borderColor = UIColor.separator.cgColor
-        contentView.backgroundColor = .systemGray6
-        dayLabel.text = dString(date)
-        wdayLabel.text = weekdaySymbolJP(for: date)
-    }
-}
-
-final class RowTitleCell: UICollectionViewCell { // Reuse: "RowTitleCell"（XIB）
-    @IBOutlet weak var titleLabel: UILabel!
-    func configure(text: String) {
-        contentView.layer.borderWidth = Grid.lineWidth
-        contentView.layer.borderColor = UIColor.separator.cgColor
-        titleLabel.text = text
-    }
-}
-
-final class RowEditCell: UICollectionViewCell { // Reuse: "RowEditCell"（XIB）
-    @IBOutlet weak var button: UIButton!
-    var onTap: (() -> Void)?
-    @IBAction func tap() { onTap?() }
-    override func awakeFromNib() {
-        super.awakeFromNib()
-        contentView.layer.borderWidth = Grid.lineWidth
-        contentView.layer.borderColor = UIColor.separator.cgColor
-        button.setTitle("編集", for: .normal)
-    }
-}
-
-final class DayStateCell: UICollectionViewCell { // Reuse: "DayStateCell"
+// MARK: - 右本体セル（Storyboard プロトタイプでもOK）
+final class DayStateCell: UICollectionViewCell {
     func configure(on: Bool) {
         contentView.layer.borderWidth = Grid.lineWidth
         contentView.layer.borderColor = UIColor.separator.cgColor
@@ -104,13 +70,13 @@ final class DayStateCell: UICollectionViewCell { // Reuse: "DayStateCell"
 // MARK: - ViewController
 final class ViewController5: UIViewController {
 
-    // Storyboard Outlets
-    @IBOutlet weak var monthLabel: UILabel!            // HeaderContainer 内
-    @IBOutlet weak var headerDaysCV: UICollectionView! // dateHeader（横）
-    @IBOutlet weak var fixedLeftCV: UICollectionView!  // 左固定（縦）
-    @IBOutlet weak var hScrollView: UIScrollView!      // 右の横スクロール
-    @IBOutlet weak var mainCV: UICollectionView!       // 右本体（縦）
-    @IBOutlet weak var collectionWidth: NSLayoutConstraint! // mainCV の Width=Constant（必ず接続）
+    // Storyboard Outlets（忘れず接続）
+    @IBOutlet weak var monthLabel: UILabel!
+    @IBOutlet weak var headerDaysCV: UICollectionView!
+    @IBOutlet weak var fixedLeftCV: UICollectionView!
+    @IBOutlet weak var hScrollView: UIScrollView!
+    @IBOutlet weak var mainCV: UICollectionView!
+    @IBOutlet weak var collectionWidth: NSLayoutConstraint! // MainCV の Width=Constant
 
     // Data
     private var createdAt = Date()
@@ -188,11 +154,16 @@ final class ViewController5: UIViewController {
         fixedLeftCV.dataSource  = self; fixedLeftCV.delegate  = self
         mainCV.dataSource       = self; mainCV.delegate       = self
 
-        // XIB で作った RowTitleCell / RowEditCell を左固定CVに登録
-//        fixedLeftCV.register(UINib(nibName: "RowTitleCell", bundle: nil),
-//                             forCellWithReuseIdentifier: "RowTitleCell")
-//        fixedLeftCV.register(UINib(nibName: "RowEditCell", bundle: nil),
-//                             forCellWithReuseIdentifier: "RowEditCell")
+        // XIBセルの登録（Prototype=0 想定）
+        headerDaysCV.register(UINib(nibName: "HeaderDayCell", bundle: nil),
+                              forCellWithReuseIdentifier: "HeaderDayCell")
+        fixedLeftCV.register(UINib(nibName: "RowTitleCell", bundle: nil),
+                             forCellWithReuseIdentifier: "RowTitleCell")
+        fixedLeftCV.register(UINib(nibName: "RowEditCell", bundle: nil),
+                             forCellWithReuseIdentifier: "RowEditCell")
+        // MainCV は Storyboard のプロトタイプを使うなら register 不要
+        // もしプロトタイプを使わないなら↓を有効化
+        // mainCV.register(DayStateCell.self, forCellWithReuseIdentifier: "DayStateCell")
 
         // Flow 設定（ズレ防止）
         if let fl = headerDaysCV.collectionViewLayout as? UICollectionViewFlowLayout {
@@ -299,7 +270,8 @@ extension ViewController5: UICollectionViewDataSource {
 
         if collectionView === headerDaysCV {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "HeaderDayCell", for: indexPath) as! HeaderDayCell
-            cell.configure(date: days[indexPath.item])
+            let date = days[indexPath.item]
+            cell.configure(dayText: dString(date), weekdayText: weekdaySymbolJP(for: date))
             return cell
         }
 
@@ -312,7 +284,6 @@ extension ViewController5: UICollectionViewDataSource {
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "RowEditCell", for: indexPath) as! RowEditCell
                 let rowIndex = indexPath.section + 1
                 cell.onTap = { [weak self] in
-                    // ここで VC6 へ遷移するなど
                     print("Edit tapped row:", rowIndex)
                     self?.view.endEditing(true)
                 }
@@ -364,7 +335,6 @@ extension ViewController5: UICollectionViewDelegate, UICollectionViewDelegateFlo
         } else if scrollView === fixedLeftCV {
             mainCV.contentOffset.y = fixedLeftCV.contentOffset.y
         }
-
     }
 
     func collectionView(_ collectionView: UICollectionView,
