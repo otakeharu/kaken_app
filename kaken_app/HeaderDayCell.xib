@@ -29,7 +29,7 @@
                         <nil key="highlightedColor"/>
                     </label>
                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EfF-S8-n3k">
-                        <rect key="frame" x="1.7216515237527119" y="13.000000000000114" width="46.000000000001819" height="35.000000000000696"/>
+                        <rect key="frame" x="1.6666666666666665" y="24" width="46" height="25"/>
                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                         <nil key="textColor"/>
                         <nil key="highlightedColor"/>
@@ -40,10 +40,8 @@
                     <constraint firstItem="vpH-av-0LO" firstAttribute="leading" secondItem="yad-og-caF" secondAttribute="leading" constant="1.7216515237527119" id="SPL-Fa-195"/>
                     <constraint firstItem="vpH-av-0LO" firstAttribute="top" secondItem="yad-og-caF" secondAttribute="top" constant="2" id="Sj7-YV-qPJ"/>
                     <constraint firstAttribute="trailing" secondItem="EfF-S8-n3k" secondAttribute="trailing" constant="2.2783484762454691" id="UiE-WL-PDc"/>
-                    <constraint firstItem="vpH-av-0LO" firstAttribute="bottom" secondItem="EfF-S8-n3k" secondAttribute="bottom" id="ic0-yp-2zd"/>
-                    <constraint firstAttribute="bottom" secondItem="EfF-S8-n3k" secondAttribute="bottom" constant="1.99999999999919" id="q6c-b5-Jl3"/>
+                    <constraint firstAttribute="bottom" secondItem="EfF-S8-n3k" secondAttribute="bottom" constant="2" id="q6c-b5-Jl3"/>
                     <constraint firstAttribute="trailing" secondItem="vpH-av-0LO" secondAttribute="trailing" constant="2.2783484762454691" id="rZc-Uz-sWR"/>
-                    <constraint firstItem="EfF-S8-n3k" firstAttribute="top" secondItem="vpH-av-0LO" secondAttribute="top" id="tG9-vg-Hqh"/>
                 </constraints>
             </collectionViewCellContentView>
             <connections>
