@@ -8,7 +8,7 @@ final class ViewController6: UIViewController, FSCalendarDelegate, FSCalendarDat
     var startDate: Date = Date() // きょう（0時）を受け取る
     var endDate: Date = Date()   // UDのgoalEndを受け取る
 
-    @IBOutlet weak var calendar: FSCalendar!
+    private var calendar: FSCalendar!
 
     // 8A: 直接UserDefaults（VC5とキーを揃える）
     private let jpCal = Calendar(identifier: .gregorian)
@@ -32,22 +32,36 @@ final class ViewController6: UIViewController, FSCalendarDelegate, FSCalendarDat
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        guard let calendar else {
-            print("ERROR: FSCalendar outlet not connected.")
-            return
-        }
-
-        // 1A: 複数日選択を許可
+        setupCalendar()
+        loadSavedSelections()
+    }
+    
+    private func setupCalendar() {
+        // FSCalendarをコードで作成
+        calendar = FSCalendar()
+        calendar.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(calendar)
+        
+        // Auto Layout設定
+        NSLayoutConstraint.activate([
+            calendar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
+            calendar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            calendar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            calendar.heightAnchor.constraint(equalToConstant: 300)
+        ])
+        
+        // FSCalendar設定
         calendar.dataSource = self
-        calendar.delegate   = self
-        calendar.locale     = jpLoc
+        calendar.delegate = self
+        calendar.locale = jpLoc
         calendar.allowsMultipleSelection = true
-
+        
         // 表示開始月を合わせる
         calendar.setCurrentPage(startDate, animated: false)
-
-        // 2B: 保存済みONを初期選択で復元
+    }
+    
+    private func loadSavedSelections() {
+        // 保存済みONを初期選択で復元
         let ud = UserDefaults.standard
         for d in days(from: startDate, to: endDate) {
             if ud.bool(forKey: key(for: d)) {

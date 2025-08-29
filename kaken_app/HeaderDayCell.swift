@@ -23,17 +23,23 @@ final class HeaderDayCell: UICollectionViewCell {
         wdayLabel.text = weekdayText
         
         if isKikanDay {
-            // kikan日付を目立たせる
-            contentView.backgroundColor = .systemRed
+            // kikan日付を目立たせる（ダークモード対応）
+            contentView.backgroundColor = UIColor { traitCollection in
+                if traitCollection.userInterfaceStyle == .dark {
+                    return UIColor.systemRed.withAlphaComponent(0.8) // ダークモード用赤
+                } else {
+                    return UIColor.systemRed // ライトモード用赤
+                }
+            }
             dayLabel.textColor = .white
             wdayLabel.textColor = .white
             dayLabel.font = .boldSystemFont(ofSize: dayLabel.font.pointSize)
             wdayLabel.font = .boldSystemFont(ofSize: wdayLabel.font.pointSize)
         } else {
-            // 通常の表示
+            // 通常の表示（ダークモード自動対応）
             contentView.backgroundColor = .systemGray6
-            dayLabel.textColor = .label
-            wdayLabel.textColor = .label
+            dayLabel.textColor = .label // 自動でダークモード対応
+            wdayLabel.textColor = .label // 自動でダークモード対応
             dayLabel.font = .systemFont(ofSize: dayLabel.font.pointSize)
             wdayLabel.font = .systemFont(ofSize: wdayLabel.font.pointSize)
         }
