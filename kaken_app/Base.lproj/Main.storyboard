@@ -534,7 +534,7 @@
                         <outlet property="headerDaysCV" destination="6vV-SN-4It" id="qX4-S5-zdl"/>
                         <outlet property="mainCV" destination="rzO-Aa-6Ex" id="0Og-S2-goG"/>
                         <outlet property="monthLabel" destination="6ib-Ys-ON2" id="l3R-cH-lmV"/>
-                        <segue destination="Iid-pQ-THr" kind="show" identifier="toViewController6" id="Ibn-Iv-5bS"/>
+                        <segue destination="Iid-pQ-THr" kind="show" identifier="toVC6" id="Ibn-Iv-5bS"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="vC4-ON-U8L" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -544,7 +544,7 @@
         <!--View Controller6-->
         <scene sceneID="5gZ-WC-wI4">
             <objects>
-                <viewController id="Iid-pQ-THr" customClass="ViewController6" customModule="kaken_app" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="Iid-pQ-THr" customClass="ViewController6" customModule="kaken_app" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="IpK-no-XvA">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
