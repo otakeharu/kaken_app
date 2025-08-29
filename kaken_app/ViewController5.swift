@@ -68,6 +68,90 @@ private enum UDKey {
 
 }
 
+// MARK: - 軽量カスタムレイアウト（横縦両方向スクロール対応）
+class GridLayout: UICollectionViewLayout {
+    private var contentWidth: CGFloat = 0
+    private var contentHeight: CGFloat = 0
+    private var cachedAttributes: [IndexPath: UICollectionViewLayoutAttributes] = [:]
+    
+    override var collectionViewContentSize: CGSize {
+        return CGSize(width: contentWidth, height: contentHeight)
+    }
+    
+    override func prepare() {
+        guard let collectionView = collectionView else { return }
+        
+        // 基本サイズのみ計算（属性は必要時に作成）
+        let numberOfSections = collectionView.numberOfSections
+        let numberOfItemsInFirstSection = numberOfSections > 0 ? collectionView.numberOfItems(inSection: 0) : 0
+        
+        contentWidth = CGFloat(numberOfItemsInFirstSection) * Grid.dayWidth
+        contentHeight = CGFloat(numberOfSections) * Grid.rowHeight
+        
+        // キャッシュをクリア（メモリ節約）
+        cachedAttributes.removeAll()
+    }
+    
+    override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
+        guard let collectionView = collectionView else { return nil }
+        
+        var attributes: [UICollectionViewLayoutAttributes] = []
+        
+        // 見える範囲のセクションとアイテムのみ計算
+        let startSection = max(0, Int(rect.minY / Grid.rowHeight))
+        let endSection = min(collectionView.numberOfSections - 1, Int(rect.maxY / Grid.rowHeight))
+        let startItem = max(0, Int(rect.minX / Grid.dayWidth))
+        
+        guard startSection <= endSection else { return attributes }
+        
+        for section in startSection...endSection {
+            let numberOfItems = collectionView.numberOfItems(inSection: section)
+            guard numberOfItems > 0 else { continue }
+            
+            let endItem = min(numberOfItems - 1, Int(rect.maxX / Grid.dayWidth) + 1)
+            let validStartItem = max(0, min(startItem, numberOfItems - 1))
+            let validEndItem = max(0, min(endItem, numberOfItems - 1))
+            
+            // Rangeが有効か確認
+            guard validStartItem <= validEndItem else { continue }
+            
+            for item in validStartItem...validEndItem {
+                let indexPath = IndexPath(item: item, section: section)
+                if let attr = layoutAttributesForItem(at: indexPath) {
+                    attributes.append(attr)
+                }
+            }
+        }
+        
+        return attributes
+    }
+    
+    override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
+        // キャッシュから取得、なければ作成
+        if let cached = cachedAttributes[indexPath] {
+            return cached
+        }
+        
+        let x = CGFloat(indexPath.item) * Grid.dayWidth
+        let y = CGFloat(indexPath.section) * Grid.rowHeight
+        let frame = CGRect(x: x, y: y, width: Grid.dayWidth, height: Grid.rowHeight)
+        
+        let attributes = UICollectionViewLayoutAttributes(forCellWith: indexPath)
+        attributes.frame = frame
+        
+        // 少数のみキャッシュ（メモリ節約）
+        if cachedAttributes.count < 100 {
+            cachedAttributes[indexPath] = attributes
+        }
+        
+        return attributes
+    }
+    
+    override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
+        return false // スクロール時の再計算を防ぐ
+    }
+}
+
 // MARK: - 右本体セル（Storyboard プロトタイプでもOK）
 final class DayStateCell: UICollectionViewCell {
     func configure(on: Bool, isAfterKikan: Bool = false) {
@@ -244,17 +328,9 @@ final class ViewController5: UIViewController {
             fl.minimumLineSpacing = 0; fl.minimumInteritemSpacing = 0
             fl.estimatedItemSize = .zero
         }
-        if let fl = mainCV.collectionViewLayout as? UICollectionViewFlowLayout {
-            fl.scrollDirection = .vertical
-            fl.minimumLineSpacing = 0
-            fl.minimumInteritemSpacing = 0
-            fl.sectionInset = UIEdgeInsets.zero
-            fl.headerReferenceSize = CGSize.zero
-            fl.footerReferenceSize = CGSize.zero
-            fl.itemSize = CGSize(width: Grid.dayWidth, height: Grid.rowHeight)
-            fl.estimatedItemSize = .zero
-            if #available(iOS 11.0, *) { fl.sectionInsetReference = .fromContentInset }
-        }
+        
+        // mainCVにカスタムレイアウトを適用（横縦両方向スクロール対応）
+        mainCV.collectionViewLayout = GridLayout()
         
         // mainCVの横スクロールを有効にするため、contentSizeを更新
         mainCV.showsHorizontalScrollIndicator = true
@@ -262,11 +338,11 @@ final class ViewController5: UIViewController {
         mainCV.bounces = true
         mainCV.alwaysBounceHorizontal = true
 
-        // ヘッダー高さぶんだけ中身を下げる（重なり防止）
-        mainCV.contentInset.top += Grid.headerHeight
-        mainCV.verticalScrollIndicatorInsets.top += Grid.headerHeight
-        fixedLeftCV.contentInset.top += Grid.headerHeight
-        fixedLeftCV.verticalScrollIndicatorInsets.top += Grid.headerHeight
+        // ヘッダー高さぶんだけ中身を下げる（重なり防止）- 空白行を削除
+        mainCV.contentInset.top = 0
+        mainCV.verticalScrollIndicatorInsets.top = 0
+        fixedLeftCV.contentInset.top = 0
+        fixedLeftCV.verticalScrollIndicatorInsets.top = 0
     }
 
     // MARK: - Width & Header
@@ -276,18 +352,8 @@ final class ViewController5: UIViewController {
         collectionWidth.constant = pixelAlign(raw)
         view.layoutIfNeeded()
         
-        // mainCVのcontentSizeを手動で設定（横スクロール有効化）
-        let totalWidth = CGFloat(days.count) * Grid.dayWidth
-        if let flowLayout = mainCV.collectionViewLayout as? UICollectionViewFlowLayout {
-            flowLayout.scrollDirection = .vertical
-            // contentSizeを強制設定するため、layoutSubviewsでcontentSizeを調整
-            DispatchQueue.main.async {
-                self.mainCV.contentSize = CGSize(
-                    width: max(totalWidth, self.mainCV.bounds.width),
-                    height: self.mainCV.contentSize.height
-                )
-            }
-        }
+        // カスタムレイアウトを使用しているため、レイアウトを再計算
+        mainCV.collectionViewLayout.invalidateLayout()
     }
 
     private func updateMonthLabel() {
@@ -315,9 +381,9 @@ final class ViewController5: UIViewController {
         let threshold = max(0, hScrollView.contentSize.width - Grid.dayWidth * 7)
         guard rightEdge >= threshold, let last = days.last else { return }
         let nextMonthEnd = monthEnd(of: jpCal.date(byAdding: .month, value: 1, to: last)!)
-        if nextMonthEnd <= goalEnd { return }
+        if nextMonthEnd <= goalEnd { return } // すでにgoalEnd以内なら追加不要
 
-        let start = jpCal.date(byAdding: .day, value: 1, to: goalEnd)!
+        let start = jpCal.date(byAdding: .day, value: 1, to: last)!
         let more  = daysArray(from: start, to: nextMonthEnd)
         guard !more.isEmpty else { return }
         days.append(contentsOf: more)
