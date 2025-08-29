@@ -2,7 +2,7 @@ import UIKit
 
 // MARK: - Constants（Storyboardの数値と一致）
 private enum Grid {
-    static let titleWidth: CGFloat   = 150
+    static let titleWidth: CGFloat   = 156
     static let editWidth: CGFloat    = 44
     static let dayWidth: CGFloat     = 44
     static let rowHeight: CGFloat    = 44
@@ -66,9 +66,39 @@ private enum UDKey {
 // MARK: - 右本体セル（Storyboard プロトタイプでもOK）
 final class DayStateCell: UICollectionViewCell {
     func configure(on: Bool) {
-        contentView.layer.borderWidth = Grid.lineWidth
-        contentView.layer.borderColor = UIColor.separator.cgColor
+        // 境界線を右と下のみに設定して隙間を視覚的になくす
+        contentView.layer.borderWidth = 0
         contentView.backgroundColor = on ? UIColor.systemBlue.withAlphaComponent(0.25) : .systemBackground
+        
+        // 既存の境界線レイヤーを削除
+        contentView.layer.sublayers?.removeAll { $0.name == "border" }
+        
+        // 右境界線
+        let rightBorder = CALayer()
+        rightBorder.name = "border"
+        rightBorder.backgroundColor = UIColor.separator.cgColor
+        rightBorder.frame = CGRect(x: bounds.width - Grid.lineWidth, y: 0, width: Grid.lineWidth, height: bounds.height)
+        contentView.layer.addSublayer(rightBorder)
+        
+        // 下境界線
+        let bottomBorder = CALayer()
+        bottomBorder.name = "border"
+        bottomBorder.backgroundColor = UIColor.separator.cgColor
+        bottomBorder.frame = CGRect(x: 0, y: bounds.height - Grid.lineWidth, width: bounds.width, height: Grid.lineWidth)
+        contentView.layer.addSublayer(bottomBorder)
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        // レイアウト変更時に境界線位置を更新
+        for sublayer in contentView.layer.sublayers ?? [] {
+            guard sublayer.name == "border" else { continue }
+            if sublayer.frame.origin.x > 0 { // 右境界線
+                sublayer.frame = CGRect(x: bounds.width - Grid.lineWidth, y: 0, width: Grid.lineWidth, height: bounds.height)
+            } else { // 下境界線
+                sublayer.frame = CGRect(x: 0, y: bounds.height - Grid.lineWidth, width: bounds.width, height: Grid.lineWidth)
+            }
+        }
     }
 }
 
@@ -209,7 +239,9 @@ final class ViewController5: UIViewController {
             fl.scrollDirection = .vertical
             fl.minimumLineSpacing = 0
             fl.minimumInteritemSpacing = 0
-            fl.sectionInset = .zero
+            fl.sectionInset = UIEdgeInsets.zero
+            fl.headerReferenceSize = CGSize.zero
+            fl.footerReferenceSize = CGSize.zero
             fl.itemSize = CGSize(width: Grid.dayWidth, height: Grid.rowHeight)
             fl.estimatedItemSize = .zero
             if #available(iOS 11.0, *) { fl.sectionInsetReference = .fromContentInset }
@@ -218,6 +250,8 @@ final class ViewController5: UIViewController {
         // mainCVの横スクロールを有効にするため、contentSizeを更新
         mainCV.showsHorizontalScrollIndicator = true
         mainCV.showsVerticalScrollIndicator = true
+        mainCV.bounces = true
+        mainCV.alwaysBounceHorizontal = true
 
         // ヘッダー高さぶんだけ中身を下げる（重なり防止）
         mainCV.contentInset.top += Grid.headerHeight
@@ -232,6 +266,19 @@ final class ViewController5: UIViewController {
         let raw = leftFixedWidth + CGFloat(days.count) * Grid.dayWidth
         collectionWidth.constant = pixelAlign(raw)
         view.layoutIfNeeded()
+        
+        // mainCVのcontentSizeを手動で設定（横スクロール有効化）
+        let totalWidth = CGFloat(days.count) * Grid.dayWidth
+        if let flowLayout = mainCV.collectionViewLayout as? UICollectionViewFlowLayout {
+            flowLayout.scrollDirection = .vertical
+            // contentSizeを強制設定するため、layoutSubviewsでcontentSizeを調整
+            DispatchQueue.main.async {
+                self.mainCV.contentSize = CGSize(
+                    width: max(totalWidth, self.mainCV.bounds.width),
+                    height: self.mainCV.contentSize.height
+                )
+            }
+        }
     }
 
     private func updateMonthLabel() {
