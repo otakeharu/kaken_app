@@ -37,6 +37,9 @@ final class ViewController6: UIViewController, FSCalendarDelegate, FSCalendarDat
     }
     
     private func setupCalendar() {
+        // 背景色を明るい色に設定
+        view.backgroundColor = .systemBackground
+        
         // FSCalendarをコードで作成
         calendar = FSCalendar()
         calendar.translatesAutoresizingMaskIntoConstraints = false
@@ -55,6 +58,15 @@ final class ViewController6: UIViewController, FSCalendarDelegate, FSCalendarDat
         calendar.delegate = self
         calendar.locale = jpLoc
         calendar.allowsMultipleSelection = true
+        
+        // カレンダーの色設定（明るい色）
+        calendar.backgroundColor = .white
+        calendar.appearance.weekdayTextColor = .black
+        calendar.appearance.headerTitleColor = .black
+        calendar.appearance.todayColor = .systemBlue
+        calendar.appearance.selectionColor = .systemRed
+        calendar.appearance.titleDefaultColor = .black
+        calendar.appearance.titleSelectionColor = .white
         
         // 表示開始月を合わせる
         calendar.setCurrentPage(startDate, animated: false)

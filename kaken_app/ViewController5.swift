@@ -163,25 +163,13 @@ final class DayStateCell: UICollectionViewCell {
       alpha = 0.5
       isUserInteractionEnabled = false
     } else {
-      // ダークモード対応のセル色
+      // 固定セル色
       if on {
-        // ON の時：ダークモード対応
-        contentView.backgroundColor = UIColor { traitCollection in
-          if traitCollection.userInterfaceStyle == .dark {
-            return UIColor(red: 200/255.0, green: 100/255.0, blue: 80/255.0, alpha: 1.0) // ダークモード用オレンジ
-          } else {
-            return UIColor(red: 255/255.0, green: 143/255.0, blue: 124/255.0, alpha: 1.0) // ライトモード用オレンジ
-          }
-        }
+        // ON のとき → #FF8F7C
+        contentView.backgroundColor = UIColor(red: 255/255.0, green: 143/255.0, blue: 124/255.0, alpha: 1.0)
       } else {
-        // OFF の時：ダークモード対応
-        contentView.backgroundColor = UIColor { traitCollection in
-          if traitCollection.userInterfaceStyle == .dark {
-            return UIColor(red: 50/255.0, green: 50/255.0, blue: 50/255.0, alpha: 1.0) // ダークモード用グレー
-          } else {
-            return UIColor(red: 255/255.0, green: 247/255.0, blue: 233/255.0, alpha: 1.0) // ライトモード用ベージュ
-          }
-        }
+        // OFF のとき → #FFF7E9
+        contentView.backgroundColor = UIColor(red: 255/255.0, green: 247/255.0, blue: 233/255.0, alpha: 1.0)
       }
       alpha = 1.0
       isUserInteractionEnabled = true
@@ -331,24 +319,11 @@ final class ViewController5: UIViewController {
     mainCV.dataSource       = self; mainCV.delegate       = self
 
     
-    // ダークモード対応の背景色設定
-    headerDaysCV.backgroundColor = UIColor { traitCollection in
-        if traitCollection.userInterfaceStyle == .dark {
-            return UIColor(red: 60/255.0, green: 60/255.0, blue: 60/255.0, alpha: 1.0) // ダークグレー
-        } else {
-            return UIColor(red: 162/255.0, green: 132/255.0, blue: 94/255.0, alpha: 1.0) // ライトブラウン
-        }
-    }
+    // 固定背景色設定
+    headerDaysCV.backgroundColor = UIColor(red: 162/255.0, green: 132/255.0, blue: 94/255.0, alpha: 1.0)
 
-    fixedLeftCV.backgroundColor = UIColor { traitCollection in
-        if traitCollection.userInterfaceStyle == .dark {
-            return UIColor(red: 40/255.0, green: 40/255.0, blue: 40/255.0, alpha: 1.0) // ダークグレー
-        } else {
-            return UIColor(red: 255/255.0, green: 247/255.0, blue: 233/255.0, alpha: 1.0) // ライトベージュ
-        }
-    }
+    fixedLeftCV.backgroundColor = UIColor(red: 255/255.0, green: 247/255.0, blue: 233/255.0, alpha: 1.0)
     
-    // システム背景色（自動でダークモード対応）
     mainCV.backgroundColor = .systemBackground
     
     // 横スクロールは hScrollView のみが担当 - 縦スクロールは有効
