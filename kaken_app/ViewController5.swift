@@ -46,8 +46,13 @@ private func monthEnd(of date: Date) -> Date {
     return jpCal.date(byAdding: .day, value: -1, to: next)!
 }
 private func daysArray(from start: Date, to end: Date) -> [Date] {
-    var arr: [Date] = []; var cur = jpCal.startOfDay(for: start); let endDay = jpCal.startOfDay(for: end)
-    while cur <= endDay { arr.append(cur); cur = jpCal.date(byAdding: .day, value: 1, to: cur)! }
+    var arr: [Date] = []
+    var cur = jpCal.startOfDay(for: start)
+    let endDay = jpCal.startOfDay(for: end)
+    while cur <= endDay {
+        arr.append(cur)
+        cur = jpCal.date(byAdding: .day, value: 1, to: cur)!
+    }
     return arr
 }
 
@@ -65,10 +70,14 @@ private enum UDKey {
 
 // MARK: - 右本体セル（Storyboard プロトタイプでもOK）
 final class DayStateCell: UICollectionViewCell {
-    func configure(on: Bool) {
+    func configure(on: Bool, isAfterKikan: Bool = false) {
         // 境界線を右と下のみに設定して隙間を視覚的になくす
         contentView.layer.borderWidth = 0
+        
+        // グレーアウト機能オフ - 全て通常表示
         contentView.backgroundColor = on ? UIColor.systemBlue.withAlphaComponent(0.25) : .systemBackground
+        alpha = 1.0
+        isUserInteractionEnabled = true
         
         // 既存の境界線レイヤーを削除
         contentView.layer.sublayers?.removeAll { $0.name == "border" }
@@ -169,17 +178,17 @@ final class ViewController5: UIViewController {
             kikanEnd = jpCal.startOfDay(for: Date()) // デフォルト値
         }
 
-        // 表示範囲を開始月の月初〜kikan日付までに制限
+        // 表示範囲を開始月の月初〜goalEndまでに設定（kikan日付制限は表示のみ）
         let startMonth = monthStart(of: createdAt)
         createdAt = startMonth
-        goalEnd = min(max(goalEnd, monthEnd(of: createdAt)), kikanEnd) // kikan日付を超えない
+        goalEnd = max(goalEnd, monthEnd(of: createdAt)) // 最低月末まで表示
         ud.set(ymdString(createdAt), forKey: UDKey.createdAt)
         ud.set(ymdString(goalEnd),   forKey: UDKey.goalEnd)
 
-        days = daysArray(from: createdAt, to: min(goalEnd, kikanEnd))
+        // kikan日付以降もスクロール可能にするため、goalEndまでdays配列を作成
+        days = daysArray(from: createdAt, to: goalEnd)
         if days.isEmpty {
-            let endDate = min(monthEnd(of: createdAt), kikanEnd)
-            days = daysArray(from: createdAt, to: endDate)
+            days = daysArray(from: createdAt, to: monthEnd(of: createdAt))
         }
 
       for rowIndex in 1...Grid.maxRows { // 1..24
@@ -377,7 +386,8 @@ extension ViewController5: UICollectionViewDataSource {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "DayStateCell", for: indexPath) as! DayStateCell
         let rowIndex = indexPath.section + 1
         let date = days[indexPath.item]
-        cell.configure(on: isOn(row: rowIndex, date: date))
+        let isAfterKikan = jpCal.compare(date, to: kikanEnd, toGranularity: .day) == .orderedDescending
+        cell.configure(on: isOn(row: rowIndex, date: date), isAfterKikan: isAfterKikan)
         return cell
     }
 }
