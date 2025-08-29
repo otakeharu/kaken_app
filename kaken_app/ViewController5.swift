@@ -2,12 +2,13 @@ import UIKit
 
 // MARK: - Constants（Storyboardの数値と一致）
 private enum Grid {
-    static let titleWidth: CGFloat   = 160
-    static let editWidth: CGFloat    = 40
+    static let titleWidth: CGFloat   = 150
+    static let editWidth: CGFloat    = 44
     static let dayWidth: CGFloat     = 44
     static let rowHeight: CGFloat    = 44
     static let headerHeight: CGFloat = 44
     static let lineWidth: CGFloat    = 1.0 / UIScreen.main.scale
+    //static let lineWidth: CGFloat    = 0
     static let maxRows               = 24
 }
 
@@ -85,6 +86,7 @@ final class ViewController5: UIViewController {
     // Data
     private var createdAt = Date()
     private var goalEnd   = Date()
+    private var kikanEnd  = Date() // VC2で設定されたkikan日付
     private var days: [Date] = []
     private var titles: [String] = Array(repeating: "", count: Grid.maxRows)
     private var firstVisibleDayIndex = 0
@@ -104,6 +106,10 @@ final class ViewController5: UIViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         updateContentWidth()
+        // mainCVのcontentSizeを手動で更新（横スクロール有効化のため）
+        DispatchQueue.main.async {
+            self.mainCV.layoutIfNeeded()
+        }
     }
 
     // MARK: - Setup
@@ -126,18 +132,24 @@ final class ViewController5: UIViewController {
             ud.set(ymdString(goalEnd), forKey: UDKey.goalEnd)
         }
 
-        // 表示範囲を開始月の月初〜月末に最低保証
+        // VC2で設定されたkikan日付を取得
+        if let kikanDate = ud.object(forKey: "kikan") as? Date {
+            kikanEnd = jpCal.startOfDay(for: kikanDate)
+        } else {
+            kikanEnd = jpCal.startOfDay(for: Date()) // デフォルト値
+        }
+
+        // 表示範囲を開始月の月初〜kikan日付までに制限
         let startMonth = monthStart(of: createdAt)
-        let endMonth   = monthEnd(of: createdAt)
         createdAt = startMonth
-        goalEnd   = max(goalEnd, endMonth)
+        goalEnd = min(max(goalEnd, monthEnd(of: createdAt)), kikanEnd) // kikan日付を超えない
         ud.set(ymdString(createdAt), forKey: UDKey.createdAt)
         ud.set(ymdString(goalEnd),   forKey: UDKey.goalEnd)
 
-        days = daysArray(from: createdAt, to: goalEnd)
+        days = daysArray(from: createdAt, to: min(goalEnd, kikanEnd))
         if days.isEmpty {
-            goalEnd = monthEnd(of: createdAt)
-            days = daysArray(from: createdAt, to: goalEnd)
+            let endDate = min(monthEnd(of: createdAt), kikanEnd)
+            days = daysArray(from: createdAt, to: endDate)
         }
 
       for rowIndex in 1...Grid.maxRows { // 1..24
@@ -161,6 +173,13 @@ final class ViewController5: UIViewController {
         headerDaysCV.dataSource = self; headerDaysCV.delegate = self
         fixedLeftCV.dataSource  = self; fixedLeftCV.delegate  = self
         mainCV.dataSource       = self; mainCV.delegate       = self
+        
+        // 背景色を設定
+        mainCV.backgroundColor = .systemBackground
+        
+        // 横スクロールを有効にする
+        mainCV.alwaysBounceHorizontal = true
+        headerDaysCV.alwaysBounceHorizontal = true
 
         // XIBセルの登録（Prototype=0 想定）
         headerDaysCV.register(UINib(nibName: "HeaderDayCell", bundle: nil),
@@ -179,6 +198,7 @@ final class ViewController5: UIViewController {
             fl.minimumLineSpacing = 0; fl.minimumInteritemSpacing = 0
             fl.itemSize = CGSize(width: Grid.dayWidth, height: Grid.headerHeight)
             fl.estimatedItemSize = .zero
+            fl.sectionInset = .zero
         }
         if let fl = fixedLeftCV.collectionViewLayout as? UICollectionViewFlowLayout {
             fl.scrollDirection = .vertical
@@ -187,11 +207,17 @@ final class ViewController5: UIViewController {
         }
         if let fl = mainCV.collectionViewLayout as? UICollectionViewFlowLayout {
             fl.scrollDirection = .vertical
-            fl.minimumLineSpacing = 0; fl.minimumInteritemSpacing = 0
+            fl.minimumLineSpacing = 0
+            fl.minimumInteritemSpacing = 0
+            fl.sectionInset = .zero
             fl.itemSize = CGSize(width: Grid.dayWidth, height: Grid.rowHeight)
             fl.estimatedItemSize = .zero
             if #available(iOS 11.0, *) { fl.sectionInsetReference = .fromContentInset }
         }
+        
+        // mainCVの横スクロールを有効にするため、contentSizeを更新
+        mainCV.showsHorizontalScrollIndicator = true
+        mainCV.showsVerticalScrollIndicator = true
 
         // ヘッダー高さぶんだけ中身を下げる（重なり防止）
         mainCV.contentInset.top += Grid.headerHeight
@@ -279,7 +305,8 @@ extension ViewController5: UICollectionViewDataSource {
         if collectionView === headerDaysCV {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "HeaderDayCell", for: indexPath) as! HeaderDayCell
             let date = days[indexPath.item]
-            cell.configure(dayText: dString(date), weekdayText: weekdaySymbolJP(for: date))
+            let isKikanDay = jpCal.isDate(date, inSameDayAs: kikanEnd)
+            cell.configure(dayText: dString(date), weekdayText: weekdaySymbolJP(for: date), isKikanDay: isKikanDay)
             return cell
         }
 
@@ -339,9 +366,42 @@ extension ViewController5: UICollectionViewDelegate, UICollectionViewDelegateFlo
             syncHeaderToHorizontal()
             appendNextMonthIfNeeded()
         } else if scrollView === mainCV {
+            // 縦スクロール連動
             fixedLeftCV.contentOffset.y = mainCV.contentOffset.y
+            // 横スクロール連動 - mainCVの横スクロールをheaderDaysCVとhScrollViewに反映
+            let mainX = mainCV.contentOffset.x
+            let headerX = mainX
+            if headerDaysCV.contentOffset.x != headerX {
+                headerDaysCV.setContentOffset(CGPoint(x: headerX, y: 0), animated: false)
+            }
+            let hScrollX = mainX + leftFixedWidth
+            if hScrollView.contentOffset.x != hScrollX {
+                hScrollView.setContentOffset(CGPoint(x: hScrollX, y: 0), animated: false)
+            }
+            // 月表示更新
+            let dayIndex = Int(round(mainX / Grid.dayWidth))
+            if dayIndex != firstVisibleDayIndex {
+                firstVisibleDayIndex = max(0, min(days.count - 1, dayIndex))
+                updateMonthLabel()
+            }
         } else if scrollView === fixedLeftCV {
             mainCV.contentOffset.y = fixedLeftCV.contentOffset.y
+        } else if scrollView === headerDaysCV {
+            // headerDaysCVの横スクロールをmainCVとhScrollViewに反映
+            let headerX = headerDaysCV.contentOffset.x
+            if mainCV.contentOffset.x != headerX {
+                mainCV.setContentOffset(CGPoint(x: headerX, y: mainCV.contentOffset.y), animated: false)
+            }
+            let hScrollX = headerX + leftFixedWidth
+            if hScrollView.contentOffset.x != hScrollX {
+                hScrollView.setContentOffset(CGPoint(x: hScrollX, y: 0), animated: false)
+            }
+            // 月表示更新
+            let dayIndex = Int(round(headerX / Grid.dayWidth))
+            if dayIndex != firstVisibleDayIndex {
+                firstVisibleDayIndex = max(0, min(days.count - 1, dayIndex))
+                updateMonthLabel()
+            }
         }
     }
 

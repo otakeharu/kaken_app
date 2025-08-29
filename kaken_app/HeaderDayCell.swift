@@ -18,8 +18,24 @@ final class HeaderDayCell: UICollectionViewCell {
     }
 
     /// VCから文字列だけ渡す（Date依存を無くしてコンパイルエラー回避）
-    func configure(dayText: String, weekdayText: String) {
+    func configure(dayText: String, weekdayText: String, isKikanDay: Bool = false) {
         dayLabel.text  = dayText
         wdayLabel.text = weekdayText
+        
+        if isKikanDay {
+            // kikan日付を目立たせる
+            contentView.backgroundColor = .systemRed
+            dayLabel.textColor = .white
+            wdayLabel.textColor = .white
+            dayLabel.font = .boldSystemFont(ofSize: dayLabel.font.pointSize)
+            wdayLabel.font = .boldSystemFont(ofSize: wdayLabel.font.pointSize)
+        } else {
+            // 通常の表示
+            contentView.backgroundColor = .systemGray6
+            dayLabel.textColor = .label
+            wdayLabel.textColor = .label
+            dayLabel.font = .systemFont(ofSize: dayLabel.font.pointSize)
+            wdayLabel.font = .systemFont(ofSize: wdayLabel.font.pointSize)
+        }
     }
 }

@@ -17,7 +17,7 @@
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Ohy-oe-08U">
-                        <rect key="frame" x="8" y="0.0" width="34" height="50"/>
+                        <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
                         <state key="normal" title="Button"/>
                         <buttonConfiguration key="configuration" style="plain" title=""/>
                         <connections>
@@ -27,9 +27,9 @@
                 </subviews>
                 <constraints>
                     <constraint firstItem="Ohy-oe-08U" firstAttribute="top" secondItem="2JT-3n-nSg" secondAttribute="top" id="LM8-BL-260"/>
+                    <constraint firstAttribute="trailing" secondItem="Ohy-oe-08U" secondAttribute="trailing" id="Oge-np-XFK"/>
                     <constraint firstAttribute="bottom" secondItem="Ohy-oe-08U" secondAttribute="bottom" id="ZJa-po-ZnQ"/>
-                    <constraint firstAttribute="trailing" secondItem="Ohy-oe-08U" secondAttribute="trailing" constant="8" id="bp3-ZI-xcf"/>
-                    <constraint firstItem="Ohy-oe-08U" firstAttribute="leading" secondItem="2JT-3n-nSg" secondAttribute="leading" constant="8" id="tMF-rb-aFn"/>
+                    <constraint firstItem="Ohy-oe-08U" firstAttribute="leading" secondItem="2JT-3n-nSg" secondAttribute="leading" id="hkG-k8-U1t"/>
                 </constraints>
             </collectionViewCellContentView>
             <connections>
