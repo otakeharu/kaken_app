@@ -228,6 +228,12 @@ final class ViewController5: UIViewController {
   private var firstVisibleDayIndex = 0
   private var isUpdatingScroll = false // 無限ループ防止フラグ
   
+  // 斜めスクロール防止用
+  private var scrollDirection: ScrollDirection = .none
+  private enum ScrollDirection {
+    case none, horizontal, vertical
+  }
+  
   private var leftFixedWidth: CGFloat { Grid.titleWidth + Grid.editWidth }
   
   override func viewDidLoad() {
@@ -556,6 +562,11 @@ extension ViewController5: UICollectionViewDelegate, UICollectionViewDelegateFlo
     collectionView.reloadItems(at: [indexPath])
   }
   
+  
+  func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+    scrollDirection = .none
+  }
+  
   func scrollViewDidScroll(_ scrollView: UIScrollView) {
     guard !isUpdatingScroll else { return } // 無限ループ防止
     
@@ -563,17 +574,47 @@ extension ViewController5: UICollectionViewDelegate, UICollectionViewDelegateFlo
       syncHeaderToHorizontal()
       appendNextMonthIfNeeded()
     } else if scrollView === mainCV {
+      // 斜めスクロール防止
+      limitScrollDirection(for: scrollView)
+      
       isUpdatingScroll = true
-      // 縦スクロール連動のみ
+      // 縦スクロール連動
       fixedLeftCV.contentOffset.y = mainCV.contentOffset.y
+      // 横スクロール連動
+      headerDaysCV.contentOffset.x = mainCV.contentOffset.x
       isUpdatingScroll = false
     } else if scrollView === fixedLeftCV {
       isUpdatingScroll = true
-      // 縦スクロール連動のみ
+      // 縦スクロール連動
       mainCV.contentOffset.y = fixedLeftCV.contentOffset.y
       isUpdatingScroll = false
+    } else if scrollView === headerDaysCV {
+      isUpdatingScroll = true
+      // 横スクロール連動
+      mainCV.contentOffset.x = headerDaysCV.contentOffset.x
+      isUpdatingScroll = false
     }
-    // headerDaysCVとmainCVの横スクロール連動は削除（hScrollViewが一元管理）
+  }
+  
+  private func limitScrollDirection(for scrollView: UIScrollView) {
+    let panGesture = scrollView.panGestureRecognizer
+    let velocity = panGesture.velocity(in: scrollView)
+    
+    if scrollDirection == .none {
+      // 最初の方向を決定
+      if abs(velocity.x) > abs(velocity.y) {
+        scrollDirection = .horizontal
+      } else if abs(velocity.y) > abs(velocity.x) {
+        scrollDirection = .vertical
+      }
+    }
+    
+    // 方向に応じてスクロールを制限
+    if scrollDirection == .horizontal {
+      scrollView.contentOffset.y = scrollView.contentOffset.y
+    } else if scrollDirection == .vertical {
+      scrollView.contentOffset.x = scrollView.contentOffset.x
+    }
   }
   
   // スナップ機能付きスクロール終了処理（hScrollViewのみ）

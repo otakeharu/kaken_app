@@ -9,9 +9,14 @@ final class ViewController6: UIViewController, FSCalendarDelegate, FSCalendarDat
     var endDate: Date = Date()   // UDのgoalEndを受け取る
 
     private var calendar: FSCalendar!
+    private var kikanDate: Date? // VC2で保存されたkikan日付
 
     // 8A: 直接UserDefaults（VC5とキーを揃える）
-    private let jpCal = Calendar(identifier: .gregorian)
+    private var jpCal: Calendar = {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = TimeZone(identifier: "Asia/Tokyo") ?? TimeZone.current
+        return cal
+    }()
     private let jpLoc = Locale(identifier: "ja_JP")
 
     private func ymd(_ d: Date) -> String {
@@ -32,13 +37,27 @@ final class ViewController6: UIViewController, FSCalendarDelegate, FSCalendarDat
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        loadKikanDate()
         setupCalendar()
         loadSavedSelections()
     }
     
+    private func loadKikanDate() {
+        // VC2で保存されたkikan日付を読み込む
+        if let kikan = UserDefaults.standard.object(forKey: "kikan") as? Date {
+            // 元の日付をそのまま使用（時刻は無視）
+            kikanDate = kikan
+            endDate = kikan
+            print("Loaded kikan date: \(kikan)")
+            print("Set kikanDate and endDate to: \(kikan)")
+        } else {
+            print("No kikan date found in UserDefaults")
+        }
+    }
+    
     private func setupCalendar() {
-        // 背景色を明るい色に設定
-        view.backgroundColor = .systemBackground
+        // 背景色をFFF7E7に設定
+        view.backgroundColor = UIColor(red: 255/255.0, green: 247/255.0, blue: 231/255.0, alpha: 1.0)
         
         // FSCalendarをコードで作成
         calendar = FSCalendar()
@@ -59,17 +78,27 @@ final class ViewController6: UIViewController, FSCalendarDelegate, FSCalendarDat
         calendar.locale = jpLoc
         calendar.allowsMultipleSelection = true
         
-        // カレンダーの色設定（明るい色）
-        calendar.backgroundColor = .white
+        // カレンダーの色設定（カスタム色）
+        calendar.backgroundColor = UIColor(red: 255/255.0, green: 247/255.0, blue: 231/255.0, alpha: 1.0) // FFF7E7
         calendar.appearance.weekdayTextColor = .black
         calendar.appearance.headerTitleColor = .black
-        calendar.appearance.todayColor = .systemBlue
-        calendar.appearance.selectionColor = .systemRed
+        calendar.appearance.todayColor = UIColor(red: 157/255.0, green: 133/255.0, blue: 99/255.0, alpha: 1.0) // 9D8563
+        calendar.appearance.selectionColor = UIColor(red: 255/255.0, green: 143/255.0, blue: 124/255.0, alpha: 1.0) // FF8F7C
         calendar.appearance.titleDefaultColor = .black
         calendar.appearance.titleSelectionColor = .white
         
         // 表示開始月を合わせる
         calendar.setCurrentPage(startDate, animated: false)
+        
+        // デバッグ用
+        if let kikan = kikanDate {
+            print("setupCalendar: kikan date is \(kikan)")
+        }
+        
+        // カレンダーの表示を強制更新
+        DispatchQueue.main.async {
+            self.calendar.reloadData()
+        }
     }
     
     private func loadSavedSelections() {
@@ -79,6 +108,10 @@ final class ViewController6: UIViewController, FSCalendarDelegate, FSCalendarDat
             if ud.bool(forKey: key(for: d)) {
                 calendar.select(d, scrollToDate: false)
             }
+        }
+        // カレンダーの表示を更新してkikan日付の色を反映
+        DispatchQueue.main.async {
+            self.calendar.reloadData()
         }
     }
 
@@ -91,5 +124,62 @@ final class ViewController6: UIViewController, FSCalendarDelegate, FSCalendarDat
     func calendar(_ calendar: FSCalendar, didDeselect date: Date, at _: FSCalendarMonthPosition) {
         guard inRange(date) else { return }
         UserDefaults.standard.set(false, forKey: key(for: date))
+    }
+    
+    // FSCalendarDelegate: 日付の色をカスタマイズ (複数のメソッドを試す)
+    func calendar(_ calendar: FSCalendar, appearance: FSCalendarAppearance, fillDefaultColorFor date: Date) -> UIColor? {
+        print("fillDefaultColorFor called for date: \(date)")
+        return getKikanColor(for: date)
+    }
+    
+    func calendar(_ calendar: FSCalendar, appearance: FSCalendarAppearance, fillSelectionColorFor date: Date) -> UIColor? {
+        print("fillSelectionColorFor called for date: \(date)")
+        return getKikanColor(for: date)
+    }
+    
+    func calendar(_ calendar: FSCalendar, appearance: FSCalendarAppearance, eventDefaultColorsFor date: Date) -> [UIColor]? {
+        print("eventDefaultColorsFor called for date: \(date)")
+        if let color = getKikanColor(for: date) {
+            return [color]
+        }
+        return nil
+    }
+    
+    private func getKikanColor(for date: Date) -> UIColor? {
+        if let kikan = kikanDate {
+            // DateFormatterで日付文字列に変換して比較
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd"
+            formatter.timeZone = TimeZone(identifier: "Asia/Tokyo")
+            formatter.calendar = jpCal
+            
+            let kikanString = formatter.string(from: kikan)
+            let dateString = formatter.string(from: date)
+            
+            print("Comparing kikan: \(kikanString) with date: \(dateString)")
+            if kikanString == dateString {
+                print("*** MATCH! Highlighting kikan date: \(date)")
+                return .systemOrange
+            }
+        }
+        return nil
+    }
+    
+    func calendar(_ calendar: FSCalendar, appearance: FSCalendarAppearance, titleDefaultColorFor date: Date) -> UIColor? {
+        if let kikan = kikanDate {
+            // DateFormatterで日付文字列に変換して比較
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd"
+            formatter.timeZone = TimeZone(identifier: "Asia/Tokyo")
+            formatter.calendar = jpCal
+            
+            let kikanString = formatter.string(from: kikan)
+            let dateString = formatter.string(from: date)
+            
+            if kikanString == dateString {
+                return .white
+            }
+        }
+        return nil
     }
 }

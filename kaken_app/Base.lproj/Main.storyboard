@@ -141,7 +141,7 @@
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="4pG-Jf-dvO">
                                 <rect key="frame" x="138" y="376" width="117" height="117"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <color key="backgroundColor" red="0.61568629740000003" green="0.52156865600000002" blue="0.38823530080000002" alpha="0.54762520695364236" colorSpace="custom" customColorSpace="displayP3"/>
+                                <color key="backgroundColor" red="0.61568629740000003" green="0.52156865600000002" blue="0.38823530080000002" alpha="0.52987893211920534" colorSpace="custom" customColorSpace="displayP3"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
