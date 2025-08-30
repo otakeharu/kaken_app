@@ -154,10 +154,15 @@ class GridLayout: UICollectionViewLayout {
 
 // MARK: - 右本体セル（Storyboard プロトタイプでもOK）
 final class DayStateCell: UICollectionViewCell {
-  func configure(on: Bool, isAfterKikan: Bool = false) {
+  func configure(on: Bool, isAfterKikan: Bool = false, isKikanDay: Bool = false) {
     contentView.layer.borderWidth = 0
     
-    if isAfterKikan {
+    if isKikanDay {
+      // kikan日付の列は透明度25%のA2845E
+      contentView.backgroundColor = UIColor(red: 162/255.0, green: 132/255.0, blue: 94/255.0, alpha: 0.25) // A2845E with 25% transparency
+      alpha = 1.0
+      isUserInteractionEnabled = true
+    } else if isAfterKikan {
       // 期間以降は灰色のままにするならここを残す
       contentView.backgroundColor = .systemGray5
       alpha = 0.5
@@ -265,13 +270,9 @@ final class ViewController5: UIViewController {
   private func setupDataFromUserDefaults() {
     let ud = UserDefaults.standard
     
-    if let s = ud.string(forKey: UDKey.createdAt),
-       let d = DateFormatter.cached("yyyy-MM-dd", cal: jpCal, loc: jpLocale).date(from: s) {
-      createdAt = d
-    } else {
-      createdAt = jpCal.startOfDay(for: Date())
-      ud.set(ymdString(createdAt), forKey: UDKey.createdAt)
-    }
+    // 常に今日の日付から開始するように変更
+    createdAt = jpCal.startOfDay(for: Date())
+    ud.set(ymdString(createdAt), forKey: UDKey.createdAt)
     
     if let s = ud.string(forKey: UDKey.goalEnd),
        let d = DateFormatter.cached("yyyy-MM-dd", cal: jpCal, loc: jpLocale).date(from: s) {
@@ -548,7 +549,8 @@ extension ViewController5: UICollectionViewDataSource {
     let rowIndex = indexPath.section + 1
     let date = days[indexPath.item]
     let isAfterKikan = jpCal.compare(date, to: kikanEnd, toGranularity: .day) == .orderedDescending
-    cell.configure(on: isOn(row: rowIndex, date: date), isAfterKikan: isAfterKikan)
+    let isKikanDay = jpCal.isDate(date, inSameDayAs: kikanEnd)
+    cell.configure(on: isOn(row: rowIndex, date: date), isAfterKikan: isAfterKikan, isKikanDay: isKikanDay)
     return cell
   }
 }

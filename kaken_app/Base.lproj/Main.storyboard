@@ -227,7 +227,7 @@
                                 <rect key="frame" x="16" y="639" width="361" height="61"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" red="1" green="0.56078431370000004" blue="0.48627450979999998" alpha="1" colorSpace="calibratedRGB"/>
-                                <color key="tintColor" red="0.20000000000000001" green="0.20000000000000001" blue="0.20000000000000001" alpha="1" colorSpace="calibratedRGB"/>
+                                <color key="tintColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="plain" title="next"/>
                                 <connections>
@@ -273,11 +273,11 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="miT-0f-7l0">
-                                <rect key="frame" x="350" y="311" width="43" height="304"/>
+                                <rect key="frame" x="352" y="389" width="41" height="155"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="tintColor" red="0.19829150883838387" green="0.18330293728481575" blue="0.15941082083085761" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                 <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="＞"/>
+                                <buttonConfiguration key="configuration" style="plain" title="次へ"/>
                                 <connections>
                                     <action selector="next" destination="lep-y2-9UB" eventType="touchUpInside" id="E4Y-L7-db0"/>
                                 </connections>
@@ -321,16 +321,6 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sMe-tg-spv">
-                                <rect key="frame" x="0.0" y="311" width="45" height="304"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <color key="tintColor" red="0.19607841970000001" green="0.1843137443" blue="0.1607843041" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="&lt;"/>
-                                <connections>
-                                    <action selector="back" destination="lep-y2-9UB" eventType="touchUpInside" id="wNJ-MT-agz"/>
-                                </connections>
-                            </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="YOUSO" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="piw-Ze-bIO">
                                 <rect key="frame" x="76" y="224" width="240" height="84"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -348,9 +338,9 @@
                                 <rect key="frame" x="42" y="639" width="309" height="61"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" red="1" green="0.56078431370000004" blue="0.48627450979999998" alpha="1" colorSpace="calibratedRGB"/>
-                                <color key="tintColor" red="0.20000000000000001" green="0.20000000000000001" blue="0.20000000000000001" alpha="1" colorSpace="calibratedRGB"/>
+                                <color key="tintColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="next"/>
+                                <buttonConfiguration key="configuration" style="plain" title="計画表を作成"/>
                                 <connections>
                                     <action selector="nextButtontapped:" destination="lep-y2-9UB" eventType="touchUpInside" id="3Gq-Ny-gcN"/>
                                 </connections>
@@ -362,6 +352,16 @@
                                 <color key="textColor" red="0.29016729800000002" green="0.29016729800000002" blue="0.29016729800000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sMe-tg-spv">
+                                <rect key="frame" x="0.0" y="389" width="39" height="155"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="tintColor" red="0.19607841970000001" green="0.1843137443" blue="0.1607843041" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="前へ"/>
+                                <connections>
+                                    <action selector="back" destination="lep-y2-9UB" eventType="touchUpInside" id="wNJ-MT-agz"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="3if-KY-Hcw"/>
                         <color key="backgroundColor" red="0.99607843159999998" green="0.96862745289999996" blue="0.91372549530000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
@@ -379,7 +379,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="K2T-8J-Fxw" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3033" y="6"/>
+            <point key="canvasLocation" x="3032.8244274809158" y="5.6338028169014089"/>
         </scene>
         <!--View Controller5-->
         <scene sceneID="lrY-Jg-EUK">

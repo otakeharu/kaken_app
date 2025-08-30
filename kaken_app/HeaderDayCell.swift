@@ -23,8 +23,8 @@ final class HeaderDayCell: UICollectionViewCell {
         wdayLabel.text = weekdayText
         
         if isKikanDay {
-            // kikan日付を目立たせる
-            contentView.backgroundColor = .systemRed
+            // kikan日付を目立たせる（FF8F7Cに変更）
+            contentView.backgroundColor = UIColor(red: 255/255.0, green: 143/255.0, blue: 124/255.0, alpha: 1.0) // FF8F7C
             dayLabel.textColor = .white
             wdayLabel.textColor = .white
             dayLabel.font = .boldSystemFont(ofSize: dayLabel.font.pointSize)
