@@ -78,12 +78,15 @@ final class ViewController6: UIViewController, FSCalendarDelegate, FSCalendarDat
         calendar.locale = jpLoc
         calendar.allowsMultipleSelection = true
         
+        // カスタムセルを登録
+        calendar.register(FSCalendarCell.self, forCellReuseIdentifier: "cell")
+        
         // カレンダーの色設定（カスタム色）
         calendar.backgroundColor = UIColor(red: 255/255.0, green: 247/255.0, blue: 231/255.0, alpha: 1.0) // FFF7E7
         calendar.appearance.weekdayTextColor = .black
         calendar.appearance.headerTitleColor = .black
         calendar.appearance.todayColor = .clear // 今日の色を消す
-        calendar.appearance.selectionColor = UIColor(red: 255/255.0, green: 143/255.0, blue: 124/255.0, alpha: 1.0) // FF8F7C
+        calendar.appearance.selectionColor = UIColor(red: 255/255.0, green: 143/255.0, blue: 124/255.0, alpha: 1.0) // FF8F7C（通常の選択色に戻す）
         calendar.appearance.titleDefaultColor = .black
         calendar.appearance.titleSelectionColor = .white
         
@@ -96,7 +99,7 @@ final class ViewController6: UIViewController, FSCalendarDelegate, FSCalendarDat
         }
         
         // カレンダーの表示を強制更新
-        DispatchQueue.main.async {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             self.calendar.reloadData()
             // endDateにスクロール（ハイライト確認のため）
             self.calendar.setCurrentPage(self.endDate, animated: false)
@@ -113,7 +116,7 @@ final class ViewController6: UIViewController, FSCalendarDelegate, FSCalendarDat
             }
         }
         
-        // endDateを強制的に選択状態にして目立たせる
+        // endDateも選択状態にして色を表示
         calendar.select(endDate, scrollToDate: false)
         
         // カレンダーの表示を更新してkikan日付の色を反映
@@ -126,53 +129,32 @@ final class ViewController6: UIViewController, FSCalendarDelegate, FSCalendarDat
     func calendar(_ calendar: FSCalendar, didSelect date: Date, at _: FSCalendarMonthPosition) {
         guard inRange(date) else { return }
         UserDefaults.standard.set(true, forKey: key(for: date))
+        // endDateの場合、色を更新
+        if jpCal.isDate(date, inSameDayAs: endDate) {
+            DispatchQueue.main.async {
+                self.calendar.reloadData()
+            }
+        }
     }
 
     func calendar(_ calendar: FSCalendar, didDeselect date: Date, at _: FSCalendarMonthPosition) {
         guard inRange(date) else { return }
         UserDefaults.standard.set(false, forKey: key(for: date))
+        // endDateの場合、色を更新
+        if jpCal.isDate(date, inSameDayAs: endDate) {
+            DispatchQueue.main.async {
+                self.calendar.reloadData()
+            }
+        }
     }
     
-    // FSCalendarDelegate: endDate（kikan日付）の色をカスタマイズ
-    func calendar(_ calendar: FSCalendar, appearance: FSCalendarAppearance, fillDefaultColorFor date: Date) -> UIColor? {
-        print("fillDefaultColorFor called for date: \(date)")
-        return getEndDateColor(for: date)
+    // FSCalendarDelegate: カスタムセルで色を設定
+    func calendar(_ calendar: FSCalendar, cellFor date: Date, at position: FSCalendarMonthPosition) -> FSCalendarCell {
+        let cell = calendar.dequeueReusableCell(withIdentifier: "cell", for: date, at: position)
+        return cell
     }
     
     func calendar(_ calendar: FSCalendar, appearance: FSCalendarAppearance, fillSelectionColorFor date: Date) -> UIColor? {
-        print("fillSelectionColorFor called for date: \(date)")
-        return getEndDateColor(for: date)
-    }
-    
-    func calendar(_ calendar: FSCalendar, appearance: FSCalendarAppearance, eventDefaultColorsFor date: Date) -> [UIColor]? {
-        print("eventDefaultColorsFor called for date: \(date)")
-        if let color = getEndDateColor(for: date) {
-            return [color]
-        }
-        return nil
-    }
-    
-    private func getEndDateColor(for date: Date) -> UIColor? {
-        // endDate（kikan日付）をハイライト
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        formatter.timeZone = TimeZone(identifier: "Asia/Tokyo")
-        formatter.calendar = jpCal
-        
-        let endDateString = formatter.string(from: endDate)
-        let dateString = formatter.string(from: date)
-        
-        print("Comparing endDate: \(endDateString) with date: \(dateString)")
-        if endDateString == dateString {
-            print("*** MATCH! Highlighting endDate: \(date)")
-            return UIColor(red: 157/255.0, green: 133/255.0, blue: 99/255.0, alpha: 1.0) // 9D8563
-        }
-        
-        return nil
-    }
-    
-    func calendar(_ calendar: FSCalendar, appearance: FSCalendarAppearance, titleDefaultColorFor date: Date) -> UIColor? {
-        // endDate（kikan日付）の文字色を白に
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         formatter.timeZone = TimeZone(identifier: "Asia/Tokyo")
@@ -182,8 +164,14 @@ final class ViewController6: UIViewController, FSCalendarDelegate, FSCalendarDat
         let dateString = formatter.string(from: date)
         
         if endDateString == dateString {
-            return .white
+            let isOn = UserDefaults.standard.bool(forKey: key(for: date))
+            if isOn {
+                return UIColor(red: 255/255.0, green: 143/255.0, blue: 124/255.0, alpha: 1.0) // FF8F7C
+            } else {
+                return UIColor(red: 162/255.0, green: 132/255.0, blue: 94/255.0, alpha: 1.0) // A2845E
+            }
         }
         return nil
     }
+    
 }

@@ -158,17 +158,18 @@ final class DayStateCell: UICollectionViewCell {
     contentView.layer.borderWidth = 0
     
     if isKikanDay {
-      // kikan日付の列は透明度25%のA2845E
-      contentView.backgroundColor = UIColor(red: 162/255.0, green: 132/255.0, blue: 94/255.0, alpha: 0.25) // A2845E with 25% transparency
+      // kikan日付の列のON/OFF状態を表示
+      if on {
+        // ON のとき → #FF8F7C
+        contentView.backgroundColor = UIColor(red: 255/255.0, green: 143/255.0, blue: 124/255.0, alpha: 1.0) // FF8F7C
+      } else {
+        // OFF のとき → 薄いA2845E
+        contentView.backgroundColor = UIColor(red: 162/255.0, green: 132/255.0, blue: 94/255.0, alpha: 0.25) // A2845E with 25% transparency
+      }
       alpha = 1.0
       isUserInteractionEnabled = true
-    } else if isAfterKikan {
-      // 期間以降は灰色のままにするならここを残す
-      contentView.backgroundColor = .systemGray5
-      alpha = 0.5
-      isUserInteractionEnabled = false
     } else {
-      // 固定セル色
+      // 全てのセルが保存可能（endDate制限を削除）
       if on {
         // ON のとき → #FF8F7C
         contentView.backgroundColor = UIColor(red: 255/255.0, green: 143/255.0, blue: 124/255.0, alpha: 1.0)
@@ -548,9 +549,8 @@ extension ViewController5: UICollectionViewDataSource {
     let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "DayStateCell", for: indexPath) as! DayStateCell
     let rowIndex = indexPath.section + 1
     let date = days[indexPath.item]
-    let isAfterKikan = jpCal.compare(date, to: kikanEnd, toGranularity: .day) == .orderedDescending
     let isKikanDay = jpCal.isDate(date, inSameDayAs: kikanEnd)
-    cell.configure(on: isOn(row: rowIndex, date: date), isAfterKikan: isAfterKikan, isKikanDay: isKikanDay)
+    cell.configure(on: isOn(row: rowIndex, date: date), isAfterKikan: false, isKikanDay: isKikanDay)
     return cell
   }
 }
