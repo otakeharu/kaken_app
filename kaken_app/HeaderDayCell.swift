@@ -8,7 +8,7 @@ final class HeaderDayCell: UICollectionViewCell {
         super.awakeFromNib()
         contentView.layer.borderWidth = 1.0 / UIScreen.main.scale
         contentView.layer.borderColor = UIColor.separator.cgColor
-        contentView.backgroundColor = .systemGray6
+        contentView.backgroundColor = UIColor(red: 157/255.0, green: 133/255.0, blue: 99/255.0, alpha: 1.0)
 
         dayLabel.textAlignment = .center
         wdayLabel.textAlignment = .center
@@ -31,9 +31,9 @@ final class HeaderDayCell: UICollectionViewCell {
             wdayLabel.font = .boldSystemFont(ofSize: wdayLabel.font.pointSize)
         } else {
             // 通常の表示
-            contentView.backgroundColor = .systemGray6
-            dayLabel.textColor = .label
-            wdayLabel.textColor = .label
+            contentView.backgroundColor = UIColor(red: 157/255.0, green: 133/255.0, blue: 99/255.0, alpha: 1.0)
+            dayLabel.textColor = .white
+            wdayLabel.textColor = .white
             dayLabel.font = .systemFont(ofSize: dayLabel.font.pointSize)
             wdayLabel.font = .systemFont(ofSize: wdayLabel.font.pointSize)
         }

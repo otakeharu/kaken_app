@@ -2,14 +2,14 @@ import UIKit
 
 // MARK: - Constants（Storyboardの数値と一致）
 private enum Grid {
-  static let titleWidth: CGFloat   = 156
-  static let editWidth: CGFloat    = 44
+  static let titleWidth: CGFloat   = 150
+  static let editWidth: CGFloat    = 50
   static let dayWidth: CGFloat     = 44
   static let rowHeight: CGFloat    = 44
   static let headerHeight: CGFloat = 44
   static let lineWidth: CGFloat    = 1.0 / UIScreen.main.scale
   //static let lineWidth: CGFloat    = 0
-  static let maxRows               = 24
+  static let maxRows               = 32
 }
 
 private func pixelAlign(_ x: CGFloat) -> CGFloat {
@@ -288,9 +288,8 @@ final class ViewController5: UIViewController {
       kikanEnd = jpCal.startOfDay(for: Date()) // デフォルト値
     }
     
-    // 表示範囲を開始月の月初〜goalEndまでに設定（kikan日付制限は表示のみ）
-    let startMonth = monthStart(of: createdAt)
-    createdAt = startMonth
+    // 表示範囲を今日（表作成日）〜goalEndまでに設定
+    createdAt = jpCal.startOfDay(for: createdAt) // 今日の0時から開始
     goalEnd = max(goalEnd, monthEnd(of: createdAt)) // 最低月末まで表示
     ud.set(ymdString(createdAt), forKey: UDKey.createdAt)
     ud.set(ymdString(goalEnd),   forKey: UDKey.goalEnd)
@@ -311,6 +310,10 @@ final class ViewController5: UIViewController {
   }
   
   private func setupViews() {
+    // MonthLabel styling
+    monthLabel.backgroundColor = UIColor(red: 157/255.0, green: 133/255.0, blue: 99/255.0, alpha: 1.0) // #9D8563
+    monthLabel.textColor = .white
+    
     // Scroll behaviors
     hScrollView.delegate = self
     hScrollView.alwaysBounceHorizontal = true
@@ -397,9 +400,22 @@ final class ViewController5: UIViewController {
   }
   
   private func updateMonthLabel() {
-    guard !days.isEmpty else { monthLabel.text = ""; return }
-    let idx = max(0, min(days.count - 1, firstVisibleDayIndex))
-    monthLabel.text = monthString(days[idx])
+    guard !days.isEmpty else { 
+      print("updateMonthLabel: days is empty")
+      monthLabel.text = ""
+      return 
+    }
+    
+    // headerDaysCVのスクロール位置から一番左の日付を取得
+    let headerScrollOffset = headerDaysCV.contentOffset.x
+    let leftmostIndex = Int(max(0, headerScrollOffset) / Grid.dayWidth)
+    let idx = max(0, min(days.count - 1, leftmostIndex))
+    let newText = monthString(days[idx])
+    
+    print("updateMonthLabel: headerScrollOffset=\(headerScrollOffset), leftmostIndex=\(leftmostIndex), idx=\(idx)")
+    print("updateMonthLabel: newText='\(newText)', currentText='\(monthLabel.text ?? "")'")
+    
+    monthLabel.text = newText
   }
   
   private func syncHeaderToHorizontal() {
@@ -419,8 +435,9 @@ final class ViewController5: UIViewController {
     let dayIndex = Int(round(syncedX / Grid.dayWidth))
     if dayIndex != firstVisibleDayIndex {
       firstVisibleDayIndex = max(0, min(days.count - 1, dayIndex))
-      updateMonthLabel()
     }
+    // 常にmonthLabelを更新
+    updateMonthLabel()
     
     isUpdatingScroll = false
   }
@@ -467,7 +484,7 @@ final class ViewController5: UIViewController {
     
     // ナビゲーションタイトルを設定
     vc6.title = "\(titles[rowIndex - 1]) - 編集"
-    
+
     // 画面遷移
     navigationController?.pushViewController(vc6, animated: true)
   }
@@ -583,6 +600,9 @@ extension ViewController5: UICollectionViewDelegate, UICollectionViewDelegateFlo
       // 横スクロール連動
       headerDaysCV.contentOffset.x = mainCV.contentOffset.x
       isUpdatingScroll = false
+      
+      // monthLabelを直接更新
+      updateMonthLabel()
     } else if scrollView === fixedLeftCV {
       isUpdatingScroll = true
       // 縦スクロール連動
@@ -593,6 +613,9 @@ extension ViewController5: UICollectionViewDelegate, UICollectionViewDelegateFlo
       // 横スクロール連動
       mainCV.contentOffset.x = headerDaysCV.contentOffset.x
       isUpdatingScroll = false
+      
+      // monthLabelを直接更新
+      updateMonthLabel()
     }
   }
   
