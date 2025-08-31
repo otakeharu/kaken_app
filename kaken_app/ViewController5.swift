@@ -250,6 +250,14 @@ final class ViewController5: UIViewController {
     updateContentWidth()
     updateMonthLabel()
     syncHeaderToHorizontal()
+    
+    // VC6からの変更通知を受け取る
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(calendarDataChanged),
+      name: NSNotification.Name("CalendarDataChanged"),
+      object: nil
+    )
   }
   
   override func viewWillAppear(_ animated: Bool) {
@@ -500,6 +508,14 @@ final class ViewController5: UIViewController {
       IndexPath(item: item, section: sectionIndex)
     }
     mainCV.reloadItems(at: indexPaths)
+  }
+  
+  // VC6からの変更通知を受信
+  @objc private func calendarDataChanged() {
+    DispatchQueue.main.async {
+      self.mainCV.reloadData()
+      print("VC5: Calendar data updated from VC6")
+    }
   }
 }
 

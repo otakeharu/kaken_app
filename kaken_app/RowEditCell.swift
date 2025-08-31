@@ -11,7 +11,6 @@ final class RowEditCell: UICollectionViewCell {
         super.awakeFromNib()
         contentView.layer.borderWidth = 1.0 / UIScreen.main.scale
         contentView.layer.borderColor = UIColor.separator.cgColor
-        button.setTitle("edi", for: .normal)
         button.setTitleColor(UIColor(red: 157/255.0, green: 133/255.0, blue: 99/255.0, alpha: 1.0), for: .normal)
         assert(button != nil, "RowEditCell.button is nil (check XIB)")
     }

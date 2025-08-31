@@ -42,6 +42,12 @@ final class ViewController6: UIViewController, FSCalendarDelegate, FSCalendarDat
         loadSavedSelections()
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        // VC5に戻る時に変更を通知
+        NotificationCenter.default.post(name: NSNotification.Name("CalendarDataChanged"), object: nil)
+    }
+    
     private func loadKikanDate() {
         // VC2で保存されたkikan日付を読み込む
         if let kikan = UserDefaults.standard.object(forKey: "kikan") as? Date {
@@ -77,6 +83,8 @@ final class ViewController6: UIViewController, FSCalendarDelegate, FSCalendarDat
         calendar.delegate = self
         calendar.locale = jpLoc
         calendar.allowsMultipleSelection = true
+        calendar.allowsSelection = true
+        calendar.swipeToChooseGesture.isEnabled = false // スワイプ選択を無効化してタップを確実に
         
         // カスタムセルを登録
         calendar.register(FSCalendarCell.self, forCellReuseIdentifier: "cell")
@@ -85,13 +93,16 @@ final class ViewController6: UIViewController, FSCalendarDelegate, FSCalendarDat
         calendar.backgroundColor = UIColor(red: 255/255.0, green: 247/255.0, blue: 231/255.0, alpha: 1.0) // FFF7E7
         calendar.appearance.weekdayTextColor = .black
         calendar.appearance.headerTitleColor = .black
-        calendar.appearance.todayColor = .clear // 今日の色を消す
+        calendar.appearance.todayColor = UIColor(red: 157/255.0, green: 133/255.0, blue: 99/255.0, alpha: 1.0) // 9D8563
         calendar.appearance.selectionColor = UIColor(red: 255/255.0, green: 143/255.0, blue: 124/255.0, alpha: 1.0) // FF8F7C（通常の選択色に戻す）
         calendar.appearance.titleDefaultColor = .black
         calendar.appearance.titleSelectionColor = .white
+        calendar.appearance.titleTodayColor = .white
         
         // 表示開始月を合わせる
         calendar.setCurrentPage(startDate, animated: false)
+        
+        // タップジェスチャーは削除（FSCalendarの標準機能を使用）
         
         // デバッグ用
         if let kikan = kikanDate {
@@ -125,26 +136,68 @@ final class ViewController6: UIViewController, FSCalendarDelegate, FSCalendarDat
         }
     }
 
+    // タップ許可
+    func calendar(_ calendar: FSCalendar, shouldSelect date: Date, at monthPosition: FSCalendarMonthPosition) -> Bool {
+        print("shouldSelect called for date: \(date)")
+        return true
+    }
+    
+    // デザレクト許可（重要：これでendDateのタップを検出）
+    func calendar(_ calendar: FSCalendar, shouldDeselect date: Date, at monthPosition: FSCalendarMonthPosition) -> Bool {
+        print("shouldDeselect called for date: \(date)")
+        
+        // endDateの場合は、デザレクトを許可せず、代わりに状態を切り替え
+        if jpCal.isDate(date, inSameDayAs: endDate) {
+            print("endDate deselect attempt - handling as toggle")
+            let currentState = UserDefaults.standard.bool(forKey: key(for: date))
+            UserDefaults.standard.set(!currentState, forKey: key(for: date))
+            print("endDate state changed to: \(!currentState)")
+            
+            DispatchQueue.main.async {
+                // 選択状態を強制的に更新して色を変更
+                print("Forcing selection update...")
+                self.calendar.deselect(self.endDate)
+                self.calendar.select(self.endDate, scrollToDate: false)
+                print("Selection updated")
+            }
+            
+            return false // デザレクトは実際には行わない
+        }
+        
+        return true
+    }
+    
     // 6A + 3B: タップ都度に即保存。範囲外は保存しない（選択は可）
     func calendar(_ calendar: FSCalendar, didSelect date: Date, at _: FSCalendarMonthPosition) {
+        print("didSelect called for date: \(date)")
         guard inRange(date) else { return }
-        UserDefaults.standard.set(true, forKey: key(for: date))
-        // endDateの場合、色を更新
+        
+        // endDateの場合は特別処理（ON/OFF切り替え）
         if jpCal.isDate(date, inSameDayAs: endDate) {
+            let currentState = UserDefaults.standard.bool(forKey: key(for: date))
+            UserDefaults.standard.set(!currentState, forKey: key(for: date))
+            print("endDate state changed to: \(!currentState)")
+            // endDateは常に選択状態を維持し、色を更新
             DispatchQueue.main.async {
-                self.calendar.reloadData()
+                // 一度デザレクトしてから再選択することで色の更新を強制
+                self.calendar.deselect(self.endDate)
+                self.calendar.select(self.endDate, scrollToDate: false)
             }
+        } else {
+            UserDefaults.standard.set(true, forKey: key(for: date))
         }
     }
 
     func calendar(_ calendar: FSCalendar, didDeselect date: Date, at _: FSCalendarMonthPosition) {
         guard inRange(date) else { return }
-        UserDefaults.standard.set(false, forKey: key(for: date))
-        // endDateの場合、色を更新
+        
+        // endDateの場合は再選択して選択状態を維持
         if jpCal.isDate(date, inSameDayAs: endDate) {
             DispatchQueue.main.async {
-                self.calendar.reloadData()
+                self.calendar.select(self.endDate, scrollToDate: false)
             }
+        } else {
+            UserDefaults.standard.set(false, forKey: key(for: date))
         }
     }
     
@@ -163,15 +216,33 @@ final class ViewController6: UIViewController, FSCalendarDelegate, FSCalendarDat
         let endDateString = formatter.string(from: endDate)
         let dateString = formatter.string(from: date)
         
+        print("fillSelectionColorFor called for date: \(dateString), endDate: \(endDateString)")
+        
         if endDateString == dateString {
             let isOn = UserDefaults.standard.bool(forKey: key(for: date))
-            if isOn {
-                return UIColor(red: 255/255.0, green: 143/255.0, blue: 124/255.0, alpha: 1.0) // FF8F7C
-            } else {
-                return UIColor(red: 162/255.0, green: 132/255.0, blue: 94/255.0, alpha: 1.0) // A2845E
+            print("endDate isOn: \(isOn), returning color")
+            print("Returning 9D8563 for endDate (both ON and OFF)")
+            return UIColor(red: 157/255.0, green: 133/255.0, blue: 99/255.0, alpha: 1.0) // 9D8563
+        }
+        return nil
+    }
+    
+    func calendar(_ calendar: FSCalendar, appearance: FSCalendarAppearance, fillDefaultColorFor date: Date) -> UIColor? {
+        // goalEndに印をつける（VC5のgoalEndを取得）
+        if let goalEndString = UserDefaults.standard.string(forKey: "goalEnd") {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd"
+            formatter.timeZone = TimeZone(identifier: "Asia/Tokyo")
+            formatter.calendar = jpCal
+            
+            let dateString = formatter.string(from: date)
+            
+            if goalEndString == dateString {
+                return UIColor(red: 157/255.0, green: 133/255.0, blue: 99/255.0, alpha: 0.5) // 9D8563 with 50% transparency
             }
         }
         return nil
     }
+    
     
 }

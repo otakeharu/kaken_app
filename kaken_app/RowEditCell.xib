@@ -18,8 +18,11 @@
                 <subviews>
                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Ohy-oe-08U">
                         <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+                        <color key="tintColor" red="0.61568629740000003" green="0.52156865600000002" blue="0.38823530080000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                         <state key="normal" title="Button"/>
-                        <buttonConfiguration key="configuration" style="plain"/>
+                        <buttonConfiguration key="configuration" style="plain" title="Edit">
+                            <fontDescription key="titleFontDescription" type="system" pointSize="14"/>
+                        </buttonConfiguration>
                         <connections>
                             <action selector="tap:" destination="M88-DK-JhR" eventType="touchUpInside" id="rmB-Kq-6B6"/>
                         </connections>
