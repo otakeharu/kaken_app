@@ -4,10 +4,12 @@ import FSCalendar
 final class ViewController6: UIViewController, FSCalendarDelegate, FSCalendarDataSource {
 
     // VC5 から受け取る
+    var goalId: UUID?            // 目標ID
     var rowIndex: Int = 1
     var startDate: Date = Date() // きょう（0時）を受け取る
     var endDate: Date = Date()   // UDのgoalEndを受け取る
-
+    
+    private let goalManager = GoalManager.shared
     private var calendar: FSCalendar!
     private var kikanDate: Date? // VC2で保存されたkikan日付
 
@@ -49,15 +51,17 @@ final class ViewController6: UIViewController, FSCalendarDelegate, FSCalendarDat
     }
     
     private func loadKikanDate() {
+        guard let goalId = self.goalId else { return }
+        
         // VC2で保存されたkikan日付を読み込む
-        if let kikan = UserDefaults.standard.object(forKey: "kikan") as? Date {
+        if let kikan = goalManager.getGoalData(forKey: "kikan", goalId: goalId) as? Date {
             // 元の日付をそのまま使用（時刻は無視）
             kikanDate = kikan
             endDate = kikan
             print("Loaded kikan date: \(kikan)")
             print("Set kikanDate and endDate to: \(kikan)")
         } else {
-            print("No kikan date found in UserDefaults")
+            print("No kikan date found for goal \(goalId.uuidString)")
         }
     }
     
@@ -119,10 +123,12 @@ final class ViewController6: UIViewController, FSCalendarDelegate, FSCalendarDat
     }
     
     private func loadSavedSelections() {
+        guard let goalId = self.goalId else { return }
+        
         // 保存済みONを初期選択で復元
-        let ud = UserDefaults.standard
         for d in days(from: startDate, to: endDate) {
-            if ud.bool(forKey: key(for: d)) {
+            let isOn = goalManager.getGoalData(forKey: key(for: d), goalId: goalId, defaultValue: false)
+            if isOn {
                 calendar.select(d, scrollToDate: false)
             }
         }
@@ -149,8 +155,9 @@ final class ViewController6: UIViewController, FSCalendarDelegate, FSCalendarDat
         // endDateの場合は、デザレクトを許可せず、代わりに状態を切り替え
         if jpCal.isDate(date, inSameDayAs: endDate) {
             print("endDate deselect attempt - handling as toggle")
-            let currentState = UserDefaults.standard.bool(forKey: key(for: date))
-            UserDefaults.standard.set(!currentState, forKey: key(for: date))
+            guard let goalId = self.goalId else { return false }
+            let currentState = goalManager.getGoalData(forKey: key(for: date), goalId: goalId, defaultValue: false)
+            goalManager.setGoalData(!currentState, forKey: key(for: date), goalId: goalId)
             print("endDate state changed to: \(!currentState)")
             
             DispatchQueue.main.async {
@@ -171,11 +178,12 @@ final class ViewController6: UIViewController, FSCalendarDelegate, FSCalendarDat
     func calendar(_ calendar: FSCalendar, didSelect date: Date, at _: FSCalendarMonthPosition) {
         print("didSelect called for date: \(date)")
         guard inRange(date) else { return }
+        guard let goalId = self.goalId else { return }
         
         // endDateの場合は特別処理（ON/OFF切り替え）
         if jpCal.isDate(date, inSameDayAs: endDate) {
-            let currentState = UserDefaults.standard.bool(forKey: key(for: date))
-            UserDefaults.standard.set(!currentState, forKey: key(for: date))
+            let currentState = goalManager.getGoalData(forKey: key(for: date), goalId: goalId, defaultValue: false)
+            goalManager.setGoalData(!currentState, forKey: key(for: date), goalId: goalId)
             print("endDate state changed to: \(!currentState)")
             // endDateは常に選択状態を維持し、色を更新
             DispatchQueue.main.async {
@@ -184,7 +192,7 @@ final class ViewController6: UIViewController, FSCalendarDelegate, FSCalendarDat
                 self.calendar.select(self.endDate, scrollToDate: false)
             }
         } else {
-            UserDefaults.standard.set(true, forKey: key(for: date))
+            goalManager.setGoalData(true, forKey: key(for: date), goalId: goalId)
         }
     }
 
@@ -197,7 +205,8 @@ final class ViewController6: UIViewController, FSCalendarDelegate, FSCalendarDat
                 self.calendar.select(self.endDate, scrollToDate: false)
             }
         } else {
-            UserDefaults.standard.set(false, forKey: key(for: date))
+            guard let goalId = self.goalId else { return }
+            goalManager.setGoalData(false, forKey: key(for: date), goalId: goalId)
         }
     }
     
@@ -219,7 +228,8 @@ final class ViewController6: UIViewController, FSCalendarDelegate, FSCalendarDat
         print("fillSelectionColorFor called for date: \(dateString), endDate: \(endDateString)")
         
         if endDateString == dateString {
-            let isOn = UserDefaults.standard.bool(forKey: key(for: date))
+            guard let goalId = self.goalId else { return nil }
+            let isOn = goalManager.getGoalData(forKey: key(for: date), goalId: goalId, defaultValue: false)
             print("endDate isOn: \(isOn), returning color")
             print("Returning 9D8563 for endDate (both ON and OFF)")
             return UIColor(red: 157/255.0, green: 133/255.0, blue: 99/255.0, alpha: 1.0) // 9D8563

@@ -225,6 +225,10 @@ final class ViewController5: UIViewController {
   @IBOutlet weak var mainCV: UICollectionView!
   @IBOutlet weak var collectionWidth: NSLayoutConstraint! // MainCV の Width=Constant
   
+  // 目標ID（VC2から受け取る）
+  var goalId: UUID?
+  private let goalManager = GoalManager.shared
+  
   // Data
   private var createdAt = Date()
   private var goalEnd   = Date()
@@ -250,6 +254,7 @@ final class ViewController5: UIViewController {
     updateContentWidth()
     updateMonthLabel()
     syncHeaderToHorizontal()
+    updateLastViewedScreen()
     
     // VC6からの変更通知を受け取る
     NotificationCenter.default.addObserver(
@@ -258,6 +263,16 @@ final class ViewController5: UIViewController {
       name: NSNotification.Name("CalendarDataChanged"),
       object: nil
     )
+  }
+  
+  override func viewWillDisappear(_ animated: Bool) {
+    super.viewWillDisappear(animated)
+    updateLastViewedScreen()
+  }
+  
+  private func updateLastViewedScreen() {
+    guard let goalId = self.goalId else { return }
+    goalManager.updateLastViewedScreen(goalId: goalId, screenId: "ViewController5", step: 5)
   }
   
   override func viewWillAppear(_ animated: Bool) {
@@ -277,22 +292,25 @@ final class ViewController5: UIViewController {
   
   // MARK: - Setup
   private func setupDataFromUserDefaults() {
-    let ud = UserDefaults.standard
+    guard let goalId = self.goalId else { 
+      print("Error: goalId is nil in ViewController5")
+      return 
+    }
     
     // 常に今日の日付から開始するように変更
     createdAt = jpCal.startOfDay(for: Date())
-    ud.set(ymdString(createdAt), forKey: UDKey.createdAt)
+    goalManager.setGoalData(ymdString(createdAt), forKey: "createdAt", goalId: goalId)
     
-    if let s = ud.string(forKey: UDKey.goalEnd),
-       let d = DateFormatter.cached("yyyy-MM-dd", cal: jpCal, loc: jpLocale).date(from: s) {
+    if let goalEndString = goalManager.getGoalData(forKey: "goalEnd", goalId: goalId) as? String,
+       let d = DateFormatter.cached("yyyy-MM-dd", cal: jpCal, loc: jpLocale).date(from: goalEndString) {
       goalEnd = d
     } else {
       goalEnd = createdAt
-      ud.set(ymdString(goalEnd), forKey: UDKey.goalEnd)
+      goalManager.setGoalData(ymdString(goalEnd), forKey: "goalEnd", goalId: goalId)
     }
     
     // VC2で設定されたkikan日付を取得
-    if let kikanDate = ud.object(forKey: "kikan") as? Date {
+    if let kikanDate = goalManager.getGoalData(forKey: "kikan", goalId: goalId) as? Date {
       kikanEnd = jpCal.startOfDay(for: kikanDate)
     } else {
       kikanEnd = jpCal.startOfDay(for: Date()) // デフォルト値
@@ -301,8 +319,8 @@ final class ViewController5: UIViewController {
     // 表示範囲を今日（表作成日）〜goalEndまでに設定
     createdAt = jpCal.startOfDay(for: createdAt) // 今日の0時から開始
     goalEnd = max(goalEnd, monthEnd(of: createdAt)) // 最低月末まで表示
-    ud.set(ymdString(createdAt), forKey: UDKey.createdAt)
-    ud.set(ymdString(goalEnd),   forKey: UDKey.goalEnd)
+    goalManager.setGoalData(ymdString(createdAt), forKey: "createdAt", goalId: goalId)
+    goalManager.setGoalData(ymdString(goalEnd), forKey: "goalEnd", goalId: goalId)
     
     // kikan日付以降もスクロール可能にするため、goalEndまでdays配列を作成
     days = daysArray(from: createdAt, to: goalEnd)
@@ -310,12 +328,10 @@ final class ViewController5: UIViewController {
       days = daysArray(from: createdAt, to: monthEnd(of: createdAt))
     }
     
-    for rowIndex in 1...Grid.maxRows { // 1..24
+    for rowIndex in 1...Grid.maxRows { // 1..32
       let (row, col) = elementRowAndCol(forRowIndex: rowIndex)
       let key = UDKey.koudou(row: row, col: col) // "koudou11" .. "koudou84"
-      titles[rowIndex - 1] = ud.string(forKey: key) ?? key
-      
-      
+      titles[rowIndex - 1] = goalManager.getGoalData(forKey: key, goalId: goalId, defaultValue: key)
     }
   }
   
@@ -465,7 +481,9 @@ final class ViewController5: UIViewController {
     guard !more.isEmpty else { return }
     days.append(contentsOf: more)
     goalEnd = nextMonthEnd
-    UserDefaults.standard.set(ymdString(goalEnd), forKey: UDKey.goalEnd)
+    if let goalId = self.goalId {
+      goalManager.setGoalData(ymdString(goalEnd), forKey: "goalEnd", goalId: goalId)
+    }
     
     headerDaysCV.reloadData()
     mainCV.reloadData()
@@ -474,20 +492,26 @@ final class ViewController5: UIViewController {
   
   // MARK: - Toggle helper
   private func isOn(row: Int, date: Date) -> Bool {
-    UserDefaults.standard.bool(forKey: UDKey.onoff(row: row, date: ymdString(date)))
+    guard let goalId = self.goalId else { return false }
+    let key = UDKey.onoff(row: row, date: ymdString(date))
+    return goalManager.getGoalData(forKey: key, goalId: goalId, defaultValue: false)
   }
   private func toggle(row: Int, date: Date) {
-    let ud = UserDefaults.standard
-    let k = UDKey.onoff(row: row, date: ymdString(date))
-    ud.set(!ud.bool(forKey: k), forKey: k)
+    guard let goalId = self.goalId else { return }
+    let key = UDKey.onoff(row: row, date: ymdString(date))
+    let currentValue = goalManager.getGoalData(forKey: key, goalId: goalId, defaultValue: false)
+    goalManager.setGoalData(!currentValue, forKey: key, goalId: goalId)
   }
   
   // MARK: - Calendar Editor
   private func openCalendarEditor(for rowIndex: Int) {
+    guard let goalId = self.goalId else { return }
+    
     // コードでViewController6を作成（Storyboard不要）
     let vc6 = ViewController6()
     
     // VC6に必要なデータを渡す
+    vc6.goalId = goalId          // 目標ID
     vc6.rowIndex = rowIndex
     vc6.startDate = createdAt    // 開始日
     vc6.endDate = kikanEnd       // 終了日（kikan日付まで）
